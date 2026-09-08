@@ -4,7 +4,7 @@ TypeScript frontend project for Artifact watcher, with tooling for SvelteKit, Sv
 
 ## Project status
 
-This repository contains a SvelteKit landing page with labeled Login and Password inputs at `/`, plus the SvelteKit, Vite, and TypeScript configuration needed to run it. The Connect button calls `POST /api/login` with a JSON body containing `username` and `password`. Configure the endpoint in `src/lib/api/auth.ts` to match your backend. The current integration assumes the backend establishes a same-origin cookie session and returns a successful HTTP status; it displays confirmation without navigating. The backend endpoint is not implemented in this repository. ESLint configuration and tests have not been added yet.
+This repository contains a SvelteKit landing page with labeled Login and Password inputs at `/`, plus the SvelteKit, Vite, and TypeScript configuration needed to run it. The Connect button calls `POST /api/login` with a JSON body containing `username` and `password`. Configure the endpoint in `src/lib/api/auth.ts` to match your backend. The current integration assumes the backend establishes a same-origin cookie session and returns a successful HTTP status; after a successful login, it displays a Matrix-style repository workspace at `/` with a top-level Repo dropdown. The dropdown currently shows an empty state; repository data can be supplied through the `repositories` prop of `src/lib/components/ConnectedPage.svelte`. Connection state is held in memory, so refreshing returns to the login view until session restoration is integrated. The backend endpoint is not implemented in this repository. ESLint configuration and tests have not been added yet.
 
 ## Requirements
 
