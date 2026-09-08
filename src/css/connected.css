@@ -1,0 +1,139 @@
+.workspace {
+  width: 100%;
+  max-width: 1200px;
+  flex: 1;
+}
+header {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+  padding-bottom: 28px;
+  border-bottom: 1px solid #22763d;
+}
+.brand {
+  color: #a4ffb8;
+  font-size: clamp(20px, 5vw, 30px);
+  font-weight: 800;
+  letter-spacing: -1px;
+  text-decoration: none;
+}
+.brand span,
+.status span {
+  color: #39ff78;
+}
+.repo-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+label {
+  font-size: 14px;
+  font-weight: 600;
+}
+select {
+  width: 280px;
+  max-width: 100%;
+  min-height: 46px;
+  padding: 10px 14px;
+  border: 1px solid #285c37;
+  border-radius: 2px;
+  background: #020805;
+  color: #a4ffb8;
+  font: inherit;
+  font-size: 14px;
+}
+select:focus-visible,
+a:focus-visible {
+  outline: 3px solid #39ff7870;
+  outline-offset: 3px;
+}
+.status {
+  color: #8dbb98;
+  font-size: 12px;
+  white-space: nowrap;
+}
+section {
+  padding: 72px 0 40px;
+}
+.eyebrow {
+  margin: 0 0 16px;
+  color: #39ff78;
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+h1 {
+  margin: 0;
+  font-size: clamp(28px, 5vw, 44px);
+  color: #65ff8d;
+  letter-spacing: -1.2px;
+  text-shadow: 0 0 22px #20ff5d50;
+}
+.intro {
+  margin: 16px 0 40px;
+  color: #8dbb98;
+  line-height: 1.6;
+}
+.repository-panel {
+  border: 1px solid #22763d;
+  border-radius: 4px;
+  background: #030c08f2;
+  box-shadow: 0 0 50px #00ff4112;
+  overflow: hidden;
+}
+.panel-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 24px;
+  border-bottom: 1px solid #163f24;
+  color: #8dbb98;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+}
+.panel-content {
+  padding: 64px 24px;
+  text-align: center;
+}
+.terminal-mark {
+  color: #39ff78;
+  font-size: 36px;
+  text-shadow: 0 0 20px #39ff7840;
+}
+h2 {
+  margin: 24px 0 12px;
+  font-size: 20px;
+  overflow-wrap: anywhere;
+}
+.panel-content p {
+  max-width: 480px;
+  margin: 0 auto;
+  color: #8dbb98;
+  font-size: 14px;
+  line-height: 1.8;
+}
+@media (max-width: 700px) {
+  header {
+    gap: 20px;
+  }
+  .status {
+    margin-left: auto;
+  }
+  .repo-field {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+  }
+  select {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+  }
+  section {
+    padding-top: 48px;
+  }
+  .panel-content {
+    padding: 48px 20px;
+  }
+}

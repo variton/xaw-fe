@@ -3,7 +3,6 @@ const LOGIN_ENDPOINT = "/api/login";
 
 export async function login(username: string, password: string): Promise<void> {
   let response: Response;
-  console.log(username, password);
   try {
     response = await fetch(LOGIN_ENDPOINT, {
       method: "POST",

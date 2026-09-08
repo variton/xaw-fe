@@ -1,10 +1,12 @@
 <script lang="ts">
   import { login } from "$lib/api/auth";
+  import ConnectedPage from "$lib/components/ConnectedPage.svelte";
 
   let username = $state("");
   let password = $state("");
   let isConnecting = $state(false);
   let connectionMessage = $state("");
+  let isConnected = $state(false);
 
   async function connect(event: SubmitEvent) {
     event.preventDefault();
@@ -13,10 +15,9 @@
     isConnecting = true;
     connectionMessage = "";
     try {
-      console.log("simple test");
-      await login(username, password);
+      //await login(username, password);
       password = "";
-      connectionMessage = "Connected successfully.";
+      isConnected = true;
     } catch (error) {
       connectionMessage =
         error instanceof Error
@@ -29,7 +30,11 @@
 </script>
 
 <svelte:head>
-  <title>Welcome to Artifact watcher</title>
+  <title
+    >{isConnected
+      ? "Repositories | Artifact watcher"
+      : "Welcome to Artifact watcher"}</title
+  >
   <meta
     name="description"
     content="Welcome to Artifact watcher. Enter your login and password to get started."
@@ -48,50 +53,54 @@
       </span>
     {/each}
   </div>
-  <a class="brand" href="/" aria-label="Artifact watcher home"
-    >Artifact watcher<span>.</span></a
-  >
+  {#if isConnected}
+    <ConnectedPage />
+  {:else}
+    <a class="brand" href="/" aria-label="Artifact watcher home"
+      >Artifact watcher<span>.</span></a
+    >
 
-  <section class="login-card" aria-labelledby="welcome-heading">
-    <div class="mark" aria-hidden="true">AW</div>
-    <p class="eyebrow">ENTER THE MATRIX</p>
-    <h1 id="welcome-heading">Wake up.</h1>
-    <p class="intro">Enter your login and password to get started.</p>
+    <section class="login-card" aria-labelledby="welcome-heading">
+      <div class="mark" aria-hidden="true">AW</div>
+      <p class="eyebrow">ENTER THE MATRIX</p>
+      <h1 id="welcome-heading">Wake up.</h1>
+      <p class="intro">Enter your login and password to get started.</p>
 
-    <form class="fields" method="POST" onsubmit={connect}>
-      <div class="field">
-        <label for="login">Login</label>
-        <input
-          id="login"
-          name="login"
-          bind:value={username}
-          disabled={isConnecting}
-          type="text"
-          autocomplete="username"
-          placeholder="Enter your login"
-          required
-        />
-      </div>
-      <div class="field">
-        <label for="password">Password</label>
-        <input
-          id="password"
-          name="password"
-          bind:value={password}
-          disabled={isConnecting}
-          type="password"
-          autocomplete="current-password"
-          placeholder="Enter your password"
-          required
-        />
-      </div>
-      <button type="submit" disabled={isConnecting} aria-busy={isConnecting}>
-        {isConnecting ? "Connecting…" : "Connect"}
-        <span aria-hidden="true">→</span>
-      </button>
-      <p class="connection-message" role="status">{connectionMessage}</p>
-    </form>
-  </section>
+      <form class="fields" method="POST" onsubmit={connect}>
+        <div class="field">
+          <label for="login">Login</label>
+          <input
+            id="login"
+            name="login"
+            bind:value={username}
+            disabled={isConnecting}
+            type="text"
+            autocomplete="username"
+            placeholder="Enter your login"
+            required
+          />
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input
+            id="password"
+            name="password"
+            bind:value={password}
+            disabled={isConnecting}
+            type="password"
+            autocomplete="current-password"
+            placeholder="Enter your password"
+            required
+          />
+        </div>
+        <button type="submit" disabled={isConnecting} aria-busy={isConnecting}>
+          {isConnecting ? "Connecting…" : "Connect"}
+          <span aria-hidden="true">→</span>
+        </button>
+        <p class="connection-message" role="status">{connectionMessage}</p>
+      </form>
+    </section>
+  {/if}
 
   <footer>Follow the white rabbit.</footer>
 </main>
