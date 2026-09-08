@@ -97,5 +97,5 @@
 </main>
 
 <style>
-  @import "./landing.css";
+  @import "../css/landing.css";
 </style>
