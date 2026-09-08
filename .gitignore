@@ -1,3 +1,9 @@
+#vim extensions
+*.swp
+*.swo
+*.swn
+*.swm
+
 node_modules
 bootstrap.sh
 .svelte-kit
