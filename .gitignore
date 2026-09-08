@@ -1,2 +1,4 @@
 node_modules
 bootstrap.sh
+.svelte-kit
+build
