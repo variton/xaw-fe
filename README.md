@@ -1,10 +1,10 @@
-# xaw-fe
+# Artifact watcher
 
-TypeScript frontend project for xaw, with tooling for SvelteKit, Svelte, and Vite.
+TypeScript frontend project for Artifact watcher, with tooling for SvelteKit, Svelte, and Vite.
 
 ## Project status
 
-This repository is an initial tooling scaffold. It contains npm scripts, a dependency lockfile, a bootstrap script, and TypeDoc settings. Application source, routes, tests, and the SvelteKit, Vite, TypeScript, and ESLint configuration files have not been added yet. Development, build, and validation scripts require those files before they can be used successfully.
+This repository contains a SvelteKit landing page with labeled Login and Password inputs at `/`, plus the SvelteKit, Vite, and TypeScript configuration needed to run it. The Connect button calls `POST /api/login` with a JSON body containing `username` and `password`. Configure the endpoint in `src/lib/api/auth.ts` to match your backend. The current integration assumes the backend establishes a same-origin cookie session and returns a successful HTTP status; it displays confirmation without navigating. The backend endpoint is not implemented in this repository. ESLint configuration and tests have not been added yet.
 
 ## Requirements
 
@@ -20,7 +20,7 @@ From the repository root, install the locked dependencies:
 npm ci
 ```
 
-Once the application source and configuration are in place, start the development server:
+Start the development server:
 
 ```sh
 npm run dev
@@ -54,14 +54,14 @@ The script runs `npm install` when the lockfile is missing, or `npm ci` when the
 
 ## Build and preview
 
-After completing the application scaffold:
+Build and preview the application:
 
 ```sh
 npm run build
 npm run preview
 ```
 
-`preview` is for inspecting the build locally. Deployment configuration is not included. `@sveltejs/adapter-auto` is declared as a development dependency, but a SvelteKit configuration must be added to select and configure an adapter.
+`preview` is for inspecting the build locally. SvelteKit uses `@sveltejs/adapter-auto`; deployment may require an adapter specific to your hosting platform.
 
 ## API documentation
 
@@ -72,7 +72,7 @@ npm run preview
 - Output directory: `docs/`.
 - Private, protected, and internal members excluded.
 
-TypeDoc is not currently declared in `package.json`, and the entry point and TypeScript configuration are missing. To enable documentation generation, create those files and install TypeDoc:
+TypeDoc is not currently declared in `package.json`, and the entry point is missing. To enable documentation generation, create the entry point and install TypeDoc:
 
 ```sh
 npm install --save-dev typedoc
@@ -83,7 +83,6 @@ npm run docs
 
 ```text
 .
-├── bootstrap.sh       # Install dependencies if needed and start Vite
 ├── LICENSE            # MIT license
 ├── package.json       # npm scripts and development dependencies
 ├── package-lock.json  # Locked dependency versions
