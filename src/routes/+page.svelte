@@ -54,7 +54,7 @@
     {/each}
   </div>
   {#if isConnected}
-    <ConnectedPage />
+    <ConnectedPage {username} />
   {:else}
     <a class="brand" href="/" aria-label="Artifact watcher home"
       >Artifact watcher<span>.</span></a
