@@ -84,6 +84,7 @@ h1 {
 }
 .panel-heading {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
   padding: 18px 24px;
@@ -91,6 +92,61 @@ h1 {
   color: #8dbb98;
   font-size: 11px;
   letter-spacing: 1.5px;
+}
+.panel-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 32px;
+}
+.repository-name,
+.repository-date {
+  color: #39ff78;
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+.repository-date {
+  white-space: nowrap;
+}
+.repository-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 24px;
+  border-bottom: 1px solid #163f24;
+}
+.repository-actions button {
+  min-height: 60px;
+  padding: 18px 28px;
+  border: 1px solid #a4ffb8;
+  border-radius: 8px;
+  background: linear-gradient(#82ffa4, #39e96d);
+  color: #032610;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 800;
+  box-shadow:
+    0 8px 0 #16843b,
+    0 12px 18px #0009,
+    0 0 20px #39ff7826,
+    inset 0 2px 0 #ffffff99,
+    inset 0 -2px 0 #0d993e66;
+  cursor: pointer;
+}
+.repository-actions button:hover {
+  background: linear-gradient(#b0ffc6, #59ff88);
+}
+.repository-actions button:active {
+  transform: translateY(6px);
+  box-shadow:
+    0 2px 0 #16843b,
+    inset 0 1px 3px #0005;
+}
+.repository-actions button:focus-visible {
+  outline: 3px solid #39ff78;
+  outline-offset: 4px;
 }
 .panel-content {
   padding: 64px 24px;

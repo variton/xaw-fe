@@ -1,6 +1,9 @@
 <script lang="ts">
   type Repository = { id: string; name: string };
 
+  // Placeholder until a repository date is supplied by the backend.
+  const repositoryDate = "2026-09-22";
+
   let {
     repositories = [
       { id: "xcicd", name: "xcicd" },
@@ -42,7 +45,22 @@
 
     <div class="repository-panel" aria-live="polite">
       <div class="panel-heading">
-        <span>REPOSITORY WATCHER</span><span aria-hidden="true">[ AW ]</span>
+        <div class="panel-title">
+          {#if repository}
+            <span class="repository-name">{repository.name}</span>
+          {/if}
+          <time
+            class="repository-date"
+            datetime={repositoryDate}
+            title="Placeholder repository date">[{repositoryDate}]</time
+          >
+        </div>
+        <span aria-hidden="true">[ AW ]</span>
+      </div>
+      <div class="repository-actions">
+        <button type="button">Memory leak</button>
+        <button type="button">Unit tests</button>
+        <button type="button">Coverage tests</button>
       </div>
       <div class="panel-content">
         <div class="terminal-mark" aria-hidden="true">&gt;_</div>
