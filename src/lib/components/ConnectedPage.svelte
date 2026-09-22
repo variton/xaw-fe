@@ -7,9 +7,21 @@
   import { cardMetrics, coverageMetrics } from "$lib/report-summary";
 
   const summaries = [
-    { title: "Memory leak", metrics: cardMetrics(memoryLeakReport) },
-    { title: "Unit tests", metrics: cardMetrics(unitTestsReport) },
-    { title: "Coverage tests", metrics: coverageMetrics(coverageReport) },
+    {
+      title: "Memory leak",
+      slug: "memory-leak",
+      metrics: cardMetrics(memoryLeakReport),
+    },
+    {
+      title: "Unit tests",
+      slug: "unit-tests",
+      metrics: cardMetrics(unitTestsReport),
+    },
+    {
+      title: "Coverage tests",
+      slug: "coverage-tests",
+      metrics: coverageMetrics(coverageReport),
+    },
   ];
 
   const reportDocuments: Record<string, { title: string; html: string }> = {
@@ -156,13 +168,11 @@
               {:else}
                 <p>Summary unavailable.</p>
               {/if}
+              <div class="repository-actions">
+                <a href={reportHref(summary.slug)}>{summary.title}</a>
+              </div>
             </article>
           {/each}
-        </div>
-        <div class="repository-actions">
-          <a href={reportHref("memory-leak")}>Memory leak</a>
-          <a href={reportHref("unit-tests")}>Unit tests</a>
-          <a href={reportHref("coverage-tests")}>Coverage tests</a>
         </div>
       {/if}
       {#if reportDocument}
