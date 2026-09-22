@@ -22,11 +22,21 @@ header {
 .status span {
   color: #39ff78;
 }
-.repo-field {
+.repository-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-left: auto;
+}
+.repo-field,
+.date-field {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-left: auto;
+}
+.date-field select {
+  width: 170px;
 }
 label {
   font-size: 14px;
@@ -271,10 +281,15 @@ h2 {
   .status {
     margin-left: auto;
   }
-  .repo-field {
+  .repository-filters {
     order: 3;
     width: 100%;
     margin-left: 0;
+  }
+  .repo-field,
+  .date-field {
+    flex: 1 1 240px;
+    min-width: 0;
   }
   select {
     flex: 1;

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
+  import { onMount } from "svelte";
   import memoryLeakReport from "../../../reports/valgrind-report.html?raw";
   import unitTestsReport from "../../../reports/doctest-report.html?raw";
   import coverageReport from "../../../reports/index.html?raw";
@@ -69,8 +70,19 @@
   }
   type Repository = { id: string; name: string };
 
-  // Placeholder until a repository date is supplied by the backend.
-  const repositoryDate = "2026-09-22";
+  let availableDates = $state<string[]>([]);
+  let repositoryDate = $state("");
+  onMount(() => {
+    const today = new Date();
+    availableDates = Array.from({ length: 7 }, (_, daysAgo) => {
+      const date = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() - daysAgo,
+      );
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    });
+  });
 
   let {
     repositories = [
@@ -90,18 +102,29 @@
     <a class="brand" href="/" aria-label="Artifact watcher home"
       >Artifact watcher<span>.</span></a
     >
-    <div class="repo-field">
-      <label for="repo">Repo</label>
-      <select id="repo" name="repo" bind:value={selectedRepo}>
-        <option value="" disabled>
-          {repositories.length
-            ? "Select a repository"
-            : "No repositories available"}
-        </option>
-        {#each repositories as repo (repo.id)}
-          <option value={repo.id}>{repo.name}</option>
-        {/each}
-      </select>
+    <div class="repository-filters">
+      <div class="repo-field">
+        <label for="repo">Repo</label>
+        <select id="repo" name="repo" bind:value={selectedRepo}>
+          <option value="" disabled>
+            {repositories.length
+              ? "Select a repository"
+              : "No repositories available"}
+          </option>
+          {#each repositories as repo (repo.id)}
+            <option value={repo.id}>{repo.name}</option>
+          {/each}
+        </select>
+      </div>
+      <div class="date-field">
+        <label for="report-date">Date</label>
+        <select id="report-date" name="report-date" bind:value={repositoryDate}>
+          <option value="" disabled>Select a date</option>
+          {#each availableDates as date}
+            <option value={date}>{date}</option>
+          {/each}
+        </select>
+      </div>
     </div>
     <span class="status"><span aria-hidden="true">●</span> Connected</span>
   </header>
@@ -125,11 +148,13 @@
           {#if repository}
             <span class="repository-name">{repository.name}</span>
           {/if}
-          <time
-            class="repository-date"
-            datetime={repositoryDate}
-            title="Placeholder repository date">[{repositoryDate}]</time
-          >
+          {#if repositoryDate}
+            <time
+              class="repository-date"
+              datetime={repositoryDate}
+              title="Selected report date">[{repositoryDate}]</time
+            >
+          {/if}
         </div>
         <div class="panel-controls">
           <span aria-hidden="true">[ AW ]</span>
