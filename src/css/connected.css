@@ -59,6 +59,27 @@ a:focus-visible {
   outline: 3px solid #39ff7870;
   outline-offset: 3px;
 }
+.logout-button {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid #39ff78;
+  border-radius: 4px;
+  background: linear-gradient(#10331c, #020805);
+  color: #39ff78;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.logout-button:hover {
+  background: #174b29;
+}
+.logout-button:focus-visible {
+  outline: 3px solid #39ff78;
+  outline-offset: 4px;
+}
 .status {
   color: #8dbb98;
   font-size: 12px;
