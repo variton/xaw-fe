@@ -1,0 +1,228 @@
+:root {
+  color-scheme: dark;
+  --bg: #020604;
+  --panel: #030c08;
+  --panel-2: #082612;
+  --text: #a4ffb8;
+  --muted: #8dbb98;
+  --border: #22763d;
+  --accent: #39ff78;
+  --accent-light: #65ff8d;
+  --good: #39ff78;
+  --green: #39ff78;
+  --bad: #ff8282;
+  --red: #ff8282;
+  scrollbar-color: #22763d #020604;
+}
+
+body {
+  position: relative;
+  isolation: isolate;
+  margin: 0;
+  padding: 24px;
+  font:
+    14px/1.6 "Courier New",
+    Courier,
+    monospace;
+  color: var(--text);
+  background:
+    repeating-linear-gradient(0deg, transparent 0 3px, #39ff7805 3px 4px),
+    linear-gradient(90deg, #39ff7804 1px, transparent 1px),
+    radial-gradient(ellipse at top, #082612, var(--bg) 75%);
+  background-size:
+    auto,
+    32px 100%,
+    auto;
+  overflow-wrap: anywhere;
+}
+
+body::before {
+  content: "0101 アイウエオ 1010 カキクケコ 0110 サシスセソ 1100 タチツテト 0011 ナニヌネノ";
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  color: #39ff7870;
+  font-size: 12px;
+  letter-spacing: 6px;
+  text-shadow: 0 0 8px #39ff7850;
+}
+
+body .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+body .header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 0 0 24px;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+body h1,
+body td.title {
+  margin: 0 0 8px;
+  color: var(--accent-light);
+  font-size: clamp(24px, 5vw, 32px);
+  font-weight: 800;
+  letter-spacing: -1px;
+  text-shadow: 0 0 22px #20ff5d50;
+}
+
+body .header p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+body .grid,
+body .summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: 16px;
+  margin: 0 0 24px;
+}
+
+body .card,
+body .suite-card,
+body details.report-item,
+body center > table {
+  background: linear-gradient(180deg, var(--panel-2), var(--panel));
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 1px 0 #39ff7812,
+    0 0 24px #00ff410a;
+}
+
+body .card {
+  padding: 20px;
+}
+body .metric-label,
+body .card-title {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+body .metric-value,
+body .card-value {
+  color: var(--accent);
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+body .failed,
+body .error-kind {
+  color: var(--red);
+}
+
+body .metric-sub,
+body .report-subtitle,
+body .suite-file,
+body .suite-meta,
+body .metadata,
+body .footer-note,
+body .versionInfo {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+body .report-title,
+body .suite-name {
+  color: var(--accent);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+body summary,
+body details.report-item > summary {
+  padding: 20px;
+}
+body summary:hover {
+  background: #39ff780a;
+}
+body summary:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: -3px;
+}
+
+body .badge,
+body .status-pill {
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+body .badge-passed,
+body .status-pill:not(.fail),
+body .status-banner {
+  color: var(--accent);
+  border: 1px solid var(--border);
+  background: #39ff7810;
+  box-shadow: none;
+}
+
+body .status-banner {
+  padding: 16px 20px;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+body th,
+body .tableHead,
+body .headerCovTableHead {
+  padding: 12px;
+  color: var(--accent);
+  background: #082612;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+
+body td {
+  padding: 12px;
+}
+body tbody tr:hover {
+  background: #39ff7806;
+}
+body pre,
+body code {
+  font-family: inherit;
+}
+body pre,
+body .stack-frame {
+  color: var(--text);
+  background: #020805;
+  border: 1px solid #163f24;
+  border-radius: 4px;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 16px;
+  }
+  body .card {
+    padding: 16px;
+  }
+  body .report-summary,
+  body summary {
+    flex-wrap: wrap;
+  }
+}

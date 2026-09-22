@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Valgrind Reports Dashboard</title>
+  <style>
+    :root {
+      --bg: #020604;
+      color-scheme: dark;
+      --panel: #030c08;
+      --panel-2: #082612;
+      --text: #a4ffb8;
+      --muted: #8dbb98;
+      --good: #39ff78;
+      --bad: #ef4444;
+      --bad-bg: rgba(239, 68, 68, 0.08);
+      --border: #22763d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Courier New", Courier, monospace;
+      background: radial-gradient(ellipse at top, #082612 0, var(--bg) 75%);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .title h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+      letter-spacing: -0.02em;
+    }
+
+    .title p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 18px;
+      box-shadow: 0 0 30px #00ff4112;
+    }
+
+    .card-inner {
+      margin-top: 16px;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-bottom: 6px;
+    }
+
+    .metric-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .metric-sub {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .status-pill {
+      padding: 10px 14px;
+      border-radius: 4px;
+      border: 1px solid #22763d;
+      background: #39ff7812;
+      color: var(--good);
+      font-weight: 700;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      height: fit-content;
+    }
+
+    .status-pill.fail {
+      border-color: rgba(239, 68, 68, 0.35);
+      background: rgba(239, 68, 68, 0.12);
+      color: #fecaca;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #163f24;
+    }
+
+    .row:last-child { border-bottom: 0; }
+
+    .label {
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    code, pre {
+      font-family: "Courier New", Courier, monospace;
+    }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #020805;
+      border: 1px solid #163f24;
+      border-radius: 4px;
+      padding: 14px;
+      color: var(--text);
+      overflow-x: auto;
+    }
+
+    .ok {
+      color: var(--good);
+      font-weight: 700;
+    }
+
+    details.report-item {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      overflow: hidden;
+      margin-bottom: 18px;
+      box-shadow: 0 0 30px #00ff4112;
+    }
+
+    details.report-item > summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 18px 20px;
+      user-select: none;
+    }
+
+    details.report-item > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .report-summary {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .report-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+
+    .report-subtitle {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .report-body {
+      padding: 0 20px 20px;
+    }
+
+    details.error-item {
+      border: 1px solid rgba(239, 68, 68, 0.24);
+      border-radius: 4px;
+      background: var(--bad-bg);
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    details.error-item summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      user-select: none;
+    }
+
+    details.error-item summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .error-heading {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .error-kind {
+      font-weight: 800;
+      color: #fecaca;
+    }
+
+    .error-what {
+      color: var(--text);
+    }
+
+    .toggle {
+      color: var(--muted);
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
+
+    .error-body {
+      padding: 0 18px 18px;
+    }
+
+    .stack-frame {
+      padding: 10px 12px;
+      border-radius: 4px;
+      border: 1px solid #163f24;
+      background: #020805;
+      margin-bottom: 10px;
+    }
+
+    .stack-frame:last-child {
+      margin-bottom: 0;
+    }
+
+    .frame-main {
+      font-weight: 700;
+    }
+
+    .frame-sub {
+      color: var(--muted);
+      margin-top: 4px;
+      font-size: 0.92rem;
+    }
+
+    .inner-section h4 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+    }
+
+    .footer-note {
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 700px) {
+      .row {
+        grid-template-columns: 1fr;
+      }
+
+      details.error-item summary,
+      .report-summary {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  
+    .title h1 {
+      color: #65ff8d;
+      text-shadow: 0 0 22px #20ff5d50;
+      font-size: clamp(24px, 5vw, 32px);
+    }
+
+    .metric-value, .report-title, .inner-section h4 {
+      color: var(--good);
+    }
+
+    .metric-label {
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-size: 11px;
+    }
+
+    summary:hover {
+      background: #39ff780a;
+    }
+
+    summary:focus-visible {
+      outline: 3px solid #39ff78;
+      outline-offset: -3px;
+    }
+
+    .container {
+      overflow-wrap: anywhere;
+    }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="title">
+        <h1>Valgrind Reports Dashboard</h1>
+        <p>Folder: <code>/home/cxx-core/valgrind-reports</code></p>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="metric-label">Reports found</div>
+        <div class="metric-value">9</div>
+        <div class="metric-sub">XML files processed</div>
+      </div>
+      <div class="card">
+        <div class="metric-label">Passed</div>
+        <div class="metric-value">9</div>
+        <div class="metric-sub">No reported Valgrind errors</div>
+      </div>
+      <div class="card">
+        <div class="metric-label">Failed</div>
+        <div class="metric-value">0</div>
+        <div class="metric-sub">Reports with one or more errors</div>
+      </div>
+      <div class="card">
+        <div class="metric-label">Total errors</div>
+        <div class="metric-value">0</div>
+        <div class="metric-sub">Across all valid reports</div>
+      </div>
+    </div>
+
+    
+    <details class="report-item" open>
+      <summary>
+        <div class="report-summary">
+          <div>
+            <div class="report-title">report_1_test_core.xml</div>
+            <div class="report-subtitle">Command: <code>/home/cxx-core/bin/test_core decoy</code></div>
+          </div>
+          <div class="status-pill">PASS</div>
+        </div>
+      </summary>
+
+      <div class="report-body">
+        <div class="grid">
+          <div class="card">
+            <div class="metric-label">Errors</div>
+            <div class="metric-value">0</div>
+            <div class="metric-sub">Detected Memcheck issues</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Heap in use at exit</div>
+            <div class="metric-value">0 bytes</div>
+            <div class="metric-sub">0 blocks remaining</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Allocations / Frees</div>
+            <div class="metric-value">23 / 23</div>
+            <div class="metric-sub">Heap activity across execution</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Bytes allocated</div>
+            <div class="metric-value">117,810</div>
+            <div class="metric-sub">Total heap usage across execution</div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Execution Summary</h3>
+          <div class="list">
+            <div class="row">
+              <div class="label">Tool / Protocol</div>
+              <div class="value"><code>memcheck</code> / <code>6</code></div>
+            </div>
+            <div class="row">
+              <div class="label">PID / PPID</div>
+              <div class="value">220 / 13</div>
+            </div>
+            <div class="row">
+              <div class="label">Run state</div>
+              <div class="value">FINISHED</div>
+            </div>
+            <div class="row">
+              <div class="label">Timestamps</div>
+              <div class="value">Started at <code>00:00:00:00.048</code>, finished at <code>00:00:00:00.651</code></div>
+            </div>
+            <div class="row">
+              <div class="label">All heap blocks freed</div>
+              <div class="value">true</div>
+            </div>
+            <div class="row">
+              <div class="label">Suppressed issues</div>
+              <div class="value">0 suppressed, 0 suppressed contexts</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Arguments</h3>
+          <div class="list">
+            <div class="row">
+              <div class="label">Valgrind executable</div>
+              <div class="value"><code>/usr/bin/valgrind.bin</code></div>
+            </div>
+            <div class="row">
+              <div class="label">Valgrind flags</div>
+              <div class="value"><code>--leak-check=full</code>, <code>--show-leak-kinds=all</code>, <code>--track-origins=yes</code>, <code>--xml=yes</code>, <code>--xml-file=valgrind-reports/report_1_test_core.xml</code>, <code>--log-file=valgrind-reports/test_core.log</code>, <code>--error-exitcode=1</code></div>
+            </div>
+            <div class="row">
+              <div class="label">Program under test</div>
+              <div class="value"><code>/home/cxx-core/bin/test_core</code></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Preamble</h3>
+          <pre>Memcheck, a memory error detector
+Copyright (C) 2002-2024, and GNU GPL&#x27;d, by Julian Seward et al.
+Using Valgrind-3.26.0 and LibVEX; rerun with -h for copyright info
+Command: /home/cxx-core/bin/test_core decoy</pre>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Error Details</h3>
+          <div class="ok">No <code>&lt;error&gt;</code> entries found.</div>
+        </div>
+      </div>
+    </details>
+    
+
+    <details class="report-item" >
+      <summary>
+        <div class="report-summary">
+          <div>
+            <div class="report-title">report_2_test_err.xml</div>
+            <div class="report-subtitle">Command: <code>/home/cxx-core/bin/test_err decoy</code></div>
+          </div>
+          <div class="status-pill">PASS</div>
+        </div>
+      </summary>
+
+      <div class="report-body">
+        <div class="grid">
+          <div class="card">
+            <div class="metric-label">Errors</div>
+            <div class="metric-value">0</div>
+            <div class="metric-sub">Detected Memcheck issues</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Heap in use at exit</div>
+            <div class="metric-value">0 bytes</div>
+            <div class="metric-sub">0 blocks remaining</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Allocations / Frees</div>
+            <div class="metric-value">38 / 38</div>
+            <div class="metric-sub">Heap activity across execution</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Bytes allocated</div>
+            <div class="metric-value">118,516</div>
+            <div class="metric-sub">Total heap usage across execution</div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Execution Summary</h3>
+          <div class="list">
+            <div class="row">
+              <div class="label">Tool / Protocol</div>
+              <div class="value"><code>memcheck</code> / <code>6</code></div>
+            </div>
+            <div class="row">
+              <div class="label">PID / PPID</div>
+              <div class="value">223 / 13</div>
+            </div>
+            <div class="row">
+              <div class="label">Run state</div>
+              <div class="value">FINISHED</div>
+            </div>
+            <div class="row">
+              <div class="label">Timestamps</div>
+              <div class="value">Started at <code>00:00:00:00.043</code>, finished at <code>00:00:00:00.654</code></div>
+            </div>
+            <div class="row">
+              <div class="label">All heap blocks freed</div>
+              <div class="value">true</div>
+            </div>
+            <div class="row">
+              <div class="label">Suppressed issues</div>
+              <div class="value">0 suppressed, 0 suppressed contexts</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Arguments</h3>
+          <div class="list">
+            <div class="row">
+              <div class="label">Valgrind executable</div>
+              <div class="value"><code>/usr/bin/valgrind.bin</code></div>
+            </div>
+            <div class="row">
+              <div class="label">Valgrind flags</div>
+              <div class="value"><code>--leak-check=full</code>, <code>--show-leak-kinds=all</code>, <code>--track-origins=yes</code>, <code>--xml=yes</code>, <code>--xml-file=valgrind-reports/report_2_test_err.xml</code>, <code>--log-file=valgrind-reports/test_err.log</code>, <code>--error-exitcode=1</code></div>
+            </div>
+            <div class="row">
+              <div class="label">Program under test</div>
+              <div class="value"><code>/home/cxx-core/bin/test_err</code></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Preamble</h3>
+          <pre>Memcheck, a memory error detector
+Copyright (C) 2002-2024, and GNU GPL&#x27;d, by Julian Seward et al.
+Using Valgrind-3.26.0 and LibVEX; rerun with -h for copyright info
+Command: /home/cxx-core/bin/test_err decoy</pre>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Error Details</h3>
+          <div class="ok">No <code>&lt;error&gt;</code> entries found.</div>
+        </div>
+      </div>
+    </details>
+    
+
+    <details class="report-item" >
+      <summary>
+        <div class="report-summary">
+          <div>
+            <div class="report-title">report_3_test_error_trait.xml</div>
+            <div class="report-subtitle">Command: <code>/home/cxx-core/bin/test_error_trait decoy</code></div>
+          </div>
+          <div class="status-pill">PASS</div>
+        </div>
+      </summary>
+
+      <div class="report-body">
+        <div class="grid">
+          <div class="card">
+            <div class="metric-label">Errors</div>
+            <div class="metric-value">0</div>
+            <div class="metric-sub">Detected Memcheck issues</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Heap in use at exit</div>
+            <div class="metric-value">0 bytes</div>
+            <div class="metric-sub">0 blocks remaining</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Allocations / Frees</div>
+            <div class="metric-value">35 / 35</div>
+            <div class="metric-sub">Heap activity across execution</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Bytes allocated</div>
+            <div class="metric-value">118,357</div>
+            <div class="metric-sub">Total heap usage across execution</div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Execution Summary</h3>
+          <div class="list">
+            <div class="row">
+              <div class="label">Tool / Protocol</div>
+              <div class="value"><code>memcheck</code> / <code>6</code></div>
+            </div>
+            <div class="row">
+              <div class="label">PID / PPID</div>
+              <div class="value">226 / 13</div>
+            </div>
+            <div class="row">
+              <div class="label">Run state</div>
+              <div class="value">FINISHED</div>
+            </div>
+            <div class="row">
+              <div class="label">Timestamps</div>
+              <div class="value">Started at <code>00:00:00:00.043</code>, finished at <code>00:00:00:00.644</code></div>
+            </div>
+            <div class="row">
+              <div class="label">All heap blocks freed</div>
+              <div class="value">true</div>
+            </div>
+            <div class="row">
+              <div class="label">Suppressed issues</div>
+              <div class="value">0 suppressed, 0 suppressed contexts</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Arguments</h3>
+          <div class="list">
+            <div class="row">
+              <div class="label">Valgrind executable</div>
+              <div class="value"><code>/usr/bin/valgrind.bin</code></div>
+            </div>
+            <div class="row">
+              <div class="label">Valgrind flags</div>
+              <div class="value"><code>--leak-check=full</code>, <code>--show-leak-kinds=all</code>, <code>--track-origins=yes</code>, <code>--xml=yes</code>, <code>--xml-file=valgrind-reports/report_3_test_error_trait.xml</code>, <code>--log-file=valgrind-reports/test_error_trait.log</code>, <code>--error-exitcode=1</code></div>
+            </div>
+            <div class="row">
+              <div class="label">Program under test</div>
+              <div class="value"><code>/home/cxx-core/bin/test_error_trait</code></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Preamble</h3>
+          <pre>Memcheck, a memory error detector
+Copyright (C) 2002-2024, and GNU GPL&#x27;d, by Julian Seward et al.
+Using Valgrind-3.26.0 and LibVEX; rerun with -h for copyright info
+Command: /home/cxx-core/bin/test_error_trait decoy</pre>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Error Details</h3>
+          <div class="ok">No <code>&lt;error&gt;</code> entries found.</div>
+        </div>
+      </div>
+    </details>
+    
+
+    <details class="report-item" >
+      <summary>
+        <div class="report-summary">
+          <div>
+            <div class="report-title">report_4_test_example_math.xml</div>
+            <div class="report-subtitle">Command: <code>/home/cxx-core/bin/test_example_math decoy</code></div>
+          </div>
+          <div class="status-pill">PASS</div>
+        </div>
+      </summary>
+
+      <div class="report-body">
+        <div class="grid">
+          <div class="card">
+            <div class="metric-label">Errors</div>
+            <div class="metric-value">0</div>
+            <div class="metric-sub">Detected Memcheck issues</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Heap in use at exit</div>
+            <div class="metric-value">0 bytes</div>
+            <div class="metric-sub">0 blocks remaining</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Allocations / Frees</div>
+            <div class="metric-value">86 / 86</div>
+            <div class="metric-sub">Heap activity across execution</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Bytes allocated</div>
+            <div class="metric-value">122,510</div>
+            <div class="metric-sub">Total heap usage across execution</div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Execution Summary</h3>
+          <div class="list">
+            <div class="row">
+              <div class="label">Tool / Protocol</div>
+              <div class="value"><code>memcheck</code> / <code>6</code></div>
+            </div>
+            <div class="row">
+              <div class="label">PID / PPID</div>
+              <div class="value">229 / 13</div>
+            </div>
+            <div class="row">
+              <div class="label">Run state</div>
+              <div class="value">FINISHED</div>
+            </div>
+            <div class="row">
+              <div class="label">Timestamps</div>
+              <div class="value">Started at <code>00:00:00:00.043</code>, finished at <code>00:00:00:00.689</code></div>
+            </div>
+            <div class="row">
+              <div class="label">All heap blocks freed</div>
+              <div class="value">true</div>
+            </div>
+            <div class="row">
+              <div class="label">Suppressed issues</div>
+              <div class="value">0 suppressed, 0 suppressed contexts</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Arguments</h3>
+          <div class="list">
+            <div class="row">
+              <div class="label">Valgrind executable</div>
+              <div class="value"><code>/usr/bin/valgrind.bin</code></div>
+            </div>
+            <div class="row">
+              <div class="label">Valgrind flags</div>
+              <div class="value"><code>--leak-check=full</code>, <code>--show-leak-kinds=all</code>, <code>--track-origins=yes</code>, <code>--xml=yes</code>, <code>--xml-file=valgrind-reports/report_4_test_example_math.xml</code>, <code>--log-file=valgrind-reports/test_example_math.log</code>, <code>--error-exitcode=1</code></div>
+            </div>
+            <div class="row">
+              <div class="label">Program under test</div>
+              <div class="value"><code>/home/cxx-core/bin/test_example_math</code></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Preamble</h3>
+          <pre>Memcheck, a memory error detector
+Copyright (C) 2002-2024, and GNU GPL&#x27;d, by Julian Seward et al.
+Using Valgrind-3.26.0 and LibVEX; rerun with -h for copyright info
+Command: /home/cxx-core/bin/test_example_math decoy</pre>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Error Details</h3>
+          <div class="ok">No <code>&lt;error&gt;</code> entries found.</div>
+        </div>
+      </div>
+    </details>
+    
+
+    <details class="report-item" >
+      <summary>
+        <div class="report-summary">
+          <div>
+            <div class="report-title">report_5_test_obs.xml</div>
+            <div class="report-subtitle">Command: <code>/home/cxx-core/bin/test_obs decoy</code></div>
+          </div>
+          <div class="status-pill">PASS</div>
+        </div>
+      </summary>
+
+      <div class="report-body">
+        <div class="grid">
+          <div class="card">
+            <div class="metric-label">Errors</div>
+            <div class="metric-value">0</div>
+            <div class="metric-sub">Detected Memcheck issues</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Heap in use at exit</div>
+            <div class="metric-value">0 bytes</div>
+            <div class="metric-sub">0 blocks remaining</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Allocations / Frees</div>
+            <div class="metric-value">30 / 30</div>
+            <div class="metric-sub">Heap activity across execution</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Bytes allocated</div>
+            <div class="metric-value">118,319</div>
+            <div class="metric-sub">Total heap usage across execution</div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Execution Summary</h3>
+          <div class="list">
+            <div class="row">
+              <div class="label">Tool / Protocol</div>
+              <div class="value"><code>memcheck</code> / <code>6</code></div>
+            </div>
+            <div class="row">
+              <div class="label">PID / PPID</div>
+              <div class="value">232 / 13</div>
+            </div>
+            <div class="row">
+              <div class="label">Run state</div>
+              <div class="value">FINISHED</div>
+            </div>
+            <div class="row">
+              <div class="label">Timestamps</div>
+              <div class="value">Started at <code>00:00:00:00.044</code>, finished at <code>00:00:00:00.664</code></div>
+            </div>
+            <div class="row">
+              <div class="label">All heap blocks freed</div>
+              <div class="value">true</div>
+            </div>
+            <div class="row">
+              <div class="label">Suppressed issues</div>
+              <div class="value">0 suppressed, 0 suppressed contexts</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Arguments</h3>
+          <div class="list">
+            <div class="row">
+              <div class="label">Valgrind executable</div>
+              <div class="value"><code>/usr/bin/valgrind.bin</code></div>
+            </div>
+            <div class="row">
+              <div class="label">Valgrind flags</div>
+              <div class="value"><code>--leak-check=full</code>, <code>--show-leak-kinds=all</code>, <code>--track-origins=yes</code>, <code>--xml=yes</code>, <code>--xml-file=valgrind-reports/report_5_test_obs.xml</code>, <code>--log-file=valgrind-reports/test_obs.log</code>, <code>--error-exitcode=1</code></div>
+            </div>
+            <div class="row">
+              <div class="label">Program under test</div>
+              <div class="value"><code>/home/cxx-core/bin/test_obs</code></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Preamble</h3>
+          <pre>Memcheck, a memory error detector
+Copyright (C) 2002-2024, and GNU GPL&#x27;d, by Julian Seward et al.
+Using Valgrind-3.26.0 and LibVEX; rerun with -h for copyright info
+Command: /home/cxx-core/bin/test_obs decoy</pre>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Error Details</h3>
+          <div class="ok">No <code>&lt;error&gt;</code> entries found.</div>
+        </div>
+      </div>
+    </details>
+    
+
+    <details class="report-item" >
+      <summary>
+        <div class="report-summary">
+          <div>
+            <div class="report-title">report_6_test_obs_mc_runtime.xml</div>
+            <div class="report-subtitle">Command: <code>/home/cxx-core/bin/test_obs_mc_runtime decoy</code></div>
+          </div>
+          <div class="status-pill">PASS</div>
+        </div>
+      </summary>
+
+      <div class="report-body">
+        <div class="grid">
+          <div class="card">
+            <div class="metric-label">Errors</div>
+            <div class="metric-value">0</div>
+            <div class="metric-sub">Detected Memcheck issues</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Heap in use at exit</div>
+            <div class="metric-value">0 bytes</div>
+            <div class="metric-sub">0 blocks remaining</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Allocations / Frees</div>
+            <div class="metric-value">19 / 19</div>
+            <div class="metric-sub">Heap activity across execution</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Bytes allocated</div>
+            <div class="metric-value">117,600</div>
+            <div class="metric-sub">Total heap usage across execution</div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Execution Summary</h3>
+          <div class="list">
+            <div class="row">
+              <div class="label">Tool / Protocol</div>
+              <div class="value"><code>memcheck</code> / <code>6</code></div>
+            </div>
+            <div class="row">
+              <div class="label">PID / PPID</div>
+              <div class="value">235 / 13</div>
+            </div>
+            <div class="row">
+              <div class="label">Run state</div>
+              <div class="value">FINISHED</div>
+            </div>
+            <div class="row">
+              <div class="label">Timestamps</div>
+              <div class="value">Started at <code>00:00:00:00.043</code>, finished at <code>00:00:00:00.643</code></div>
+            </div>
+            <div class="row">
+              <div class="label">All heap blocks freed</div>
+              <div class="value">true</div>
+            </div>
+            <div class="row">
+              <div class="label">Suppressed issues</div>
+              <div class="value">0 suppressed, 0 suppressed contexts</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Arguments</h3>
+          <div class="list">
+            <div class="row">
+              <div class="label">Valgrind executable</div>
+              <div class="value"><code>/usr/bin/valgrind.bin</code></div>
+            </div>
+            <div class="row">
+              <div class="label">Valgrind flags</div>
+              <div class="value"><code>--leak-check=full</code>, <code>--show-leak-kinds=all</code>, <code>--track-origins=yes</code>, <code>--xml=yes</code>, <code>--xml-file=valgrind-reports/report_6_test_obs_mc_runtime.xml</code>, <code>--log-file=valgrind-reports/test_obs_mc_runtime.log</code>, <code>--error-exitcode=1</code></div>
+            </div>
+            <div class="row">
+              <div class="label">Program under test</div>
+              <div class="value"><code>/home/cxx-core/bin/test_obs_mc_runtime</code></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Preamble</h3>
+          <pre>Memcheck, a memory error detector
+Copyright (C) 2002-2024, and GNU GPL&#x27;d, by Julian Seward et al.
+Using Valgrind-3.26.0 and LibVEX; rerun with -h for copyright info
+Command: /home/cxx-core/bin/test_obs_mc_runtime decoy</pre>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Error Details</h3>
+          <div class="ok">No <code>&lt;error&gt;</code> entries found.</div>
+        </div>
+      </div>
+    </details>
+    
+
+    <details class="report-item" >
+      <summary>
+        <div class="report-summary">
+          <div>
+            <div class="report-title">report_7_test_obs_ml_runtime.xml</div>
+            <div class="report-subtitle">Command: <code>/home/cxx-core/bin/test_obs_ml_runtime decoy</code></div>
+          </div>
+          <div class="status-pill">PASS</div>
+        </div>
+      </summary>
+
+      <div class="report-body">
+        <div class="grid">
+          <div class="card">
+            <div class="metric-label">Errors</div>
+            <div class="metric-value">0</div>
+            <div class="metric-sub">Detected Memcheck issues</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Heap in use at exit</div>
+            <div class="metric-value">0 bytes</div>
+            <div class="metric-sub">0 blocks remaining</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Allocations / Frees</div>
+            <div class="metric-value">19 / 19</div>
+            <div class="metric-sub">Heap activity across execution</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Bytes allocated</div>
+            <div class="metric-value">117,600</div>
+            <div class="metric-sub">Total heap usage across execution</div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Execution Summary</h3>
+          <div class="list">
+            <div class="row">
+              <div class="label">Tool / Protocol</div>
+              <div class="value"><code>memcheck</code> / <code>6</code></div>
+            </div>
+            <div class="row">
+              <div class="label">PID / PPID</div>
+              <div class="value">238 / 13</div>
+            </div>
+            <div class="row">
+              <div class="label">Run state</div>
+              <div class="value">FINISHED</div>
+            </div>
+            <div class="row">
+              <div class="label">Timestamps</div>
+              <div class="value">Started at <code>00:00:00:00.044</code>, finished at <code>00:00:00:00.615</code></div>
+            </div>
+            <div class="row">
+              <div class="label">All heap blocks freed</div>
+              <div class="value">true</div>
+            </div>
+            <div class="row">
+              <div class="label">Suppressed issues</div>
+              <div class="value">0 suppressed, 0 suppressed contexts</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Arguments</h3>
+          <div class="list">
+            <div class="row">
+              <div class="label">Valgrind executable</div>
+              <div class="value"><code>/usr/bin/valgrind.bin</code></div>
+            </div>
+            <div class="row">
+              <div class="label">Valgrind flags</div>
+              <div class="value"><code>--leak-check=full</code>, <code>--show-leak-kinds=all</code>, <code>--track-origins=yes</code>, <code>--xml=yes</code>, <code>--xml-file=valgrind-reports/report_7_test_obs_ml_runtime.xml</code>, <code>--log-file=valgrind-reports/test_obs_ml_runtime.log</code>, <code>--error-exitcode=1</code></div>
+            </div>
+            <div class="row">
+              <div class="label">Program under test</div>
+              <div class="value"><code>/home/cxx-core/bin/test_obs_ml_runtime</code></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Preamble</h3>
+          <pre>Memcheck, a memory error detector
+Copyright (C) 2002-2024, and GNU GPL&#x27;d, by Julian Seward et al.
+Using Valgrind-3.26.0 and LibVEX; rerun with -h for copyright info
+Command: /home/cxx-core/bin/test_obs_ml_runtime decoy</pre>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Error Details</h3>
+          <div class="ok">No <code>&lt;error&gt;</code> entries found.</div>
+        </div>
+      </div>
+    </details>
+    
+
+    <details class="report-item" >
+      <summary>
+        <div class="report-summary">
+          <div>
+            <div class="report-title">report_8_test_obs_nc_runtime.xml</div>
+            <div class="report-subtitle">Command: <code>/home/cxx-core/bin/test_obs_nc_runtime decoy</code></div>
+          </div>
+          <div class="status-pill">PASS</div>
+        </div>
+      </summary>
+
+      <div class="report-body">
+        <div class="grid">
+          <div class="card">
+            <div class="metric-label">Errors</div>
+            <div class="metric-value">0</div>
+            <div class="metric-sub">Detected Memcheck issues</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Heap in use at exit</div>
+            <div class="metric-value">0 bytes</div>
+            <div class="metric-sub">0 blocks remaining</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Allocations / Frees</div>
+            <div class="metric-value">19 / 19</div>
+            <div class="metric-sub">Heap activity across execution</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Bytes allocated</div>
+            <div class="metric-value">117,600</div>
+            <div class="metric-sub">Total heap usage across execution</div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Execution Summary</h3>
+          <div class="list">
+            <div class="row">
+              <div class="label">Tool / Protocol</div>
+              <div class="value"><code>memcheck</code> / <code>6</code></div>
+            </div>
+            <div class="row">
+              <div class="label">PID / PPID</div>
+              <div class="value">241 / 13</div>
+            </div>
+            <div class="row">
+              <div class="label">Run state</div>
+              <div class="value">FINISHED</div>
+            </div>
+            <div class="row">
+              <div class="label">Timestamps</div>
+              <div class="value">Started at <code>00:00:00:00.044</code>, finished at <code>00:00:00:00.648</code></div>
+            </div>
+            <div class="row">
+              <div class="label">All heap blocks freed</div>
+              <div class="value">true</div>
+            </div>
+            <div class="row">
+              <div class="label">Suppressed issues</div>
+              <div class="value">0 suppressed, 0 suppressed contexts</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Arguments</h3>
+          <div class="list">
+            <div class="row">
+              <div class="label">Valgrind executable</div>
+              <div class="value"><code>/usr/bin/valgrind.bin</code></div>
+            </div>
+            <div class="row">
+              <div class="label">Valgrind flags</div>
+              <div class="value"><code>--leak-check=full</code>, <code>--show-leak-kinds=all</code>, <code>--track-origins=yes</code>, <code>--xml=yes</code>, <code>--xml-file=valgrind-reports/report_8_test_obs_nc_runtime.xml</code>, <code>--log-file=valgrind-reports/test_obs_nc_runtime.log</code>, <code>--error-exitcode=1</code></div>
+            </div>
+            <div class="row">
+              <div class="label">Program under test</div>
+              <div class="value"><code>/home/cxx-core/bin/test_obs_nc_runtime</code></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Preamble</h3>
+          <pre>Memcheck, a memory error detector
+Copyright (C) 2002-2024, and GNU GPL&#x27;d, by Julian Seward et al.
+Using Valgrind-3.26.0 and LibVEX; rerun with -h for copyright info
+Command: /home/cxx-core/bin/test_obs_nc_runtime decoy</pre>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Error Details</h3>
+          <div class="ok">No <code>&lt;error&gt;</code> entries found.</div>
+        </div>
+      </div>
+    </details>
+    
+
+    <details class="report-item" >
+      <summary>
+        <div class="report-summary">
+          <div>
+            <div class="report-title">report_9_test_obs_runtime.xml</div>
+            <div class="report-subtitle">Command: <code>/home/cxx-core/bin/test_obs_runtime decoy</code></div>
+          </div>
+          <div class="status-pill">PASS</div>
+        </div>
+      </summary>
+
+      <div class="report-body">
+        <div class="grid">
+          <div class="card">
+            <div class="metric-label">Errors</div>
+            <div class="metric-value">0</div>
+            <div class="metric-sub">Detected Memcheck issues</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Heap in use at exit</div>
+            <div class="metric-value">0 bytes</div>
+            <div class="metric-sub">0 blocks remaining</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Allocations / Frees</div>
+            <div class="metric-value">19 / 19</div>
+            <div class="metric-sub">Heap activity across execution</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Bytes allocated</div>
+            <div class="metric-value">117,585</div>
+            <div class="metric-sub">Total heap usage across execution</div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Execution Summary</h3>
+          <div class="list">
+            <div class="row">
+              <div class="label">Tool / Protocol</div>
+              <div class="value"><code>memcheck</code> / <code>6</code></div>
+            </div>
+            <div class="row">
+              <div class="label">PID / PPID</div>
+              <div class="value">244 / 13</div>
+            </div>
+            <div class="row">
+              <div class="label">Run state</div>
+              <div class="value">FINISHED</div>
+            </div>
+            <div class="row">
+              <div class="label">Timestamps</div>
+              <div class="value">Started at <code>00:00:00:00.043</code>, finished at <code>00:00:00:00.646</code></div>
+            </div>
+            <div class="row">
+              <div class="label">All heap blocks freed</div>
+              <div class="value">true</div>
+            </div>
+            <div class="row">
+              <div class="label">Suppressed issues</div>
+              <div class="value">0 suppressed, 0 suppressed contexts</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Arguments</h3>
+          <div class="list">
+            <div class="row">
+              <div class="label">Valgrind executable</div>
+              <div class="value"><code>/usr/bin/valgrind.bin</code></div>
+            </div>
+            <div class="row">
+              <div class="label">Valgrind flags</div>
+              <div class="value"><code>--leak-check=full</code>, <code>--show-leak-kinds=all</code>, <code>--track-origins=yes</code>, <code>--xml=yes</code>, <code>--xml-file=valgrind-reports/report_9_test_obs_runtime.xml</code>, <code>--log-file=valgrind-reports/test_obs_runtime.log</code>, <code>--error-exitcode=1</code></div>
+            </div>
+            <div class="row">
+              <div class="label">Program under test</div>
+              <div class="value"><code>/home/cxx-core/bin/test_obs_runtime</code></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Preamble</h3>
+          <pre>Memcheck, a memory error detector
+Copyright (C) 2002-2024, and GNU GPL&#x27;d, by Julian Seward et al.
+Using Valgrind-3.26.0 and LibVEX; rerun with -h for copyright info
+Command: /home/cxx-core/bin/test_obs_runtime decoy</pre>
+        </div>
+
+        <div class="card card-inner">
+          <h3>Error Details</h3>
+          <div class="ok">No <code>&lt;error&gt;</code> entries found.</div>
+        </div>
+      </div>
+    </details>
+    
+
+    <p class="footer-note">Each report is collapsible, and each Valgrind error inside a report is also collapsible.</p>
+  </div>
+</body>
+</html>
