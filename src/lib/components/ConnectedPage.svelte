@@ -97,6 +97,9 @@
   const repository = $derived(
     repositories.find((repo) => repo.id === selectedRepo),
   );
+  const canShowReports = $derived(
+    Boolean(repository) && availableDates.includes(repositoryDate),
+  );
 </script>
 
 <div class="workspace">
@@ -163,70 +166,84 @@
         </div>
         <div class="panel-controls">
           <span aria-hidden="true">[ AW ]</span>
-          <nav class="report-navigation" aria-label="Cycle reports">
-            <a
-              href={reportHref(previousReport)}
-              aria-label={`Previous report: ${reportNames[previousReport]}`}
-              title={`Previous: ${reportNames[previousReport]}`}>{"_<<"}</a
-            >
-            <a
-              href={reportHref(nextReport)}
-              aria-label={`Next report: ${reportNames[nextReport]}`}
-              title={`Next: ${reportNames[nextReport]}`}>{">>_"}</a
-            >
-          </nav>
+          {#if canShowReports}
+            <nav class="report-navigation" aria-label="Cycle reports">
+              <a
+                href={reportHref(previousReport)}
+                aria-label={`Previous report: ${reportNames[previousReport]}`}
+                title={`Previous: ${reportNames[previousReport]}`}>{"_<<"}</a
+              >
+              <a
+                href={reportHref(nextReport)}
+                aria-label={`Next report: ${reportNames[nextReport]}`}
+                title={`Next: ${reportNames[nextReport]}`}>{">>_"}</a
+              >
+            </nav>
+          {/if}
         </div>
       </div>
-      {#if !report}
-        <div
-          class="results-summary"
-          role="region"
-          aria-label="Report results summary"
-        >
-          {#each summaries as summary}
-            <article class="result-card">
-              <h2>{summary.title}</h2>
-              {#if summary.metrics.length}
-                <dl>
-                  {#each summary.metrics as metric}
-                    <div>
-                      <dt>{metric.label}</dt>
-                      <dd>{metric.value}</dd>
-                    </div>
-                  {/each}
-                </dl>
-              {:else}
-                <p>Summary unavailable.</p>
-              {/if}
-              <div class="repository-actions">
-                <a href={reportHref(summary.slug)}>{summary.title}</a>
-              </div>
-            </article>
-          {/each}
-        </div>
-      {/if}
-      {#if reportDocument}
-        <iframe
-          class="embedded-report"
-          title={reportDocument.title}
-          srcdoc={themedReport}
-          sandbox=""
-        ></iframe>
-      {:else}
-        <ReportTrends dates={availableDates} demo />
+      {#if !canShowReports}
         <div class="panel-content">
           <div class="terminal-mark" aria-hidden="true">&gt;_</div>
-          <h2>{repository ? repository.name : "Awaiting repository"}</h2>
+          <h2>Select a repository and date</h2>
           <p>
-            {report
-              ? `${report} results are not available yet.`
-              : repository
-                ? "Repository selected. Artifact data is not available yet."
-                : repositories.length
-                  ? "Choose a repository from the Repo dropdown above to get started."
-                  : "No repositories are available yet. Your connected repositories will appear in the Repo dropdown."}
+            {repositories.length
+              ? "Choose both a repository and a date above to view report metrics, trends, and results."
+              : "No repositories are available yet. Reports will appear after a repository and date are selected."}
           </p>
         </div>
+      {:else}
+        {#if !report}
+          <div
+            class="results-summary"
+            role="region"
+            aria-label="Report results summary"
+          >
+            {#each summaries as summary}
+              <article class="result-card">
+                <h2>{summary.title}</h2>
+                {#if summary.metrics.length}
+                  <dl>
+                    {#each summary.metrics as metric}
+                      <div>
+                        <dt>{metric.label}</dt>
+                        <dd>{metric.value}</dd>
+                      </div>
+                    {/each}
+                  </dl>
+                {:else}
+                  <p>Summary unavailable.</p>
+                {/if}
+                <div class="repository-actions">
+                  <a href={reportHref(summary.slug)}>{summary.title}</a>
+                </div>
+              </article>
+            {/each}
+          </div>
+        {/if}
+        {#if reportDocument}
+          <iframe
+            class="embedded-report"
+            title={reportDocument.title}
+            srcdoc={themedReport}
+            sandbox=""
+          ></iframe>
+        {:else}
+          <ReportTrends dates={availableDates} demo />
+          <div class="panel-content">
+            <div class="terminal-mark" aria-hidden="true">&gt;_</div>
+            <h2>{repository ? repository.name : "Awaiting repository"}</h2>
+            <p>
+              {report
+                ? `${report} results are not available yet.`
+                : repository
+                  ? "Repository selected. Artifact data is not available yet."
+                  : repositories.length
+                    ? "Choose a repository from the Repo dropdown above to get started."
+                    : "No repositories are available yet. Your connected repositories will appear in the Repo dropdown."}
+            </p>
+          </div>
+        {/if}
       {/if}
     </div>
   </section>
