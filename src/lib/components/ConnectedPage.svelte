@@ -86,12 +86,13 @@
   });
 
   let {
+    username = "",
     repositories = [
       { id: "xcicd", name: "xcicd" },
       { id: "tcxx", name: "tcxx" },
       { id: "tcxx-23", name: "tcxx-23" },
     ],
-  }: { repositories?: Repository[] } = $props();
+  }: { repositories?: Repository[]; username?: string } = $props();
   let selectedRepo = $state("");
   const repository = $derived(
     repositories.find((repo) => repo.id === selectedRepo),
@@ -134,7 +135,10 @@
     <p class="eyebrow">
       {report ? "REPOSITORY REPORT" : "CONNECTION ESTABLISHED"}
     </p>
-    <h1 id="workspace-heading">{report ?? "Welcome to the Matrix."}</h1>
+    <h1 id="workspace-heading">
+      {report ??
+        (username.trim() ? `Welcome, ${username.trim()}.` : "Welcome.")}
+    </h1>
     <p class="intro">
       {#if report}
         <a class="back-link" href="?">← Back to repositories</a>
