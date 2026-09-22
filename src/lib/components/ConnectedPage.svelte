@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from "$app/state";
   import { onMount } from "svelte";
+  import ReportTrends from "./ReportTrends.svelte";
   import memoryLeakReport from "../../../reports/valgrind-report.html?raw";
   import unitTestsReport from "../../../reports/doctest-report.html?raw";
   import coverageReport from "../../../reports/index.html?raw";
@@ -208,6 +209,7 @@
           sandbox=""
         ></iframe>
       {:else}
+        <ReportTrends dates={availableDates} demo />
         <div class="panel-content">
           <div class="terminal-mark" aria-hidden="true">&gt;_</div>
           <h2>{repository ? repository.name : "Awaiting repository"}</h2>
