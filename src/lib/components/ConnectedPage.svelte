@@ -111,20 +111,22 @@
             datetime={repositoryDate}
             title="Placeholder repository date">[{repositoryDate}]</time
           >
+        </div>
+        <div class="panel-controls">
+          <span aria-hidden="true">[ AW ]</span>
           <nav class="report-navigation" aria-label="Cycle reports">
             <a
               href={reportHref(previousReport)}
               aria-label={`Previous report: ${reportNames[previousReport]}`}
-              title={`Previous: ${reportNames[previousReport]}`}>← Previous</a
+              title={`Previous: ${reportNames[previousReport]}`}>{"_<<"}</a
             >
             <a
               href={reportHref(nextReport)}
               aria-label={`Next report: ${reportNames[nextReport]}`}
-              title={`Next: ${reportNames[nextReport]}`}>Next →</a
+              title={`Next: ${reportNames[nextReport]}`}>{">>_"}</a
             >
           </nav>
         </div>
-        <span aria-hidden="true">[ AW ]</span>
       </div>
       {#if !report}
         <div class="repository-actions">
