@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { replaceState } from "$app/navigation";
   import { login } from "$lib/api/auth";
   import ConnectedPage from "$lib/components/ConnectedPage.svelte";
 
@@ -7,6 +8,14 @@
   let isConnecting = $state(false);
   let connectionMessage = $state("");
   let isConnected = $state(false);
+
+  function logout() {
+    isConnected = false;
+    username = "";
+    password = "";
+    connectionMessage = "";
+    replaceState(window.location.pathname, {});
+  }
 
   async function connect(event: SubmitEvent) {
     event.preventDefault();
@@ -54,7 +63,7 @@
     {/each}
   </div>
   {#if isConnected}
-    <ConnectedPage {username} />
+    <ConnectedPage {username} onlogout={logout} />
   {:else}
     <a class="brand" href="/" aria-label="Artifact watcher home"
       >Artifact watcher<span>.</span></a

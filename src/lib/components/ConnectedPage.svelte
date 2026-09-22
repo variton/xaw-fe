@@ -87,12 +87,17 @@
 
   let {
     username = "",
+    onlogout,
     repositories = [
       { id: "xcicd", name: "xcicd" },
       { id: "tcxx", name: "tcxx" },
       { id: "tcxx-23", name: "tcxx-23" },
     ],
-  }: { repositories?: Repository[]; username?: string } = $props();
+  }: {
+    repositories?: Repository[];
+    username?: string;
+    onlogout: () => void;
+  } = $props();
   let selectedRepo = $state("");
   const repository = $derived(
     repositories.find((repo) => repo.id === selectedRepo),
@@ -132,6 +137,9 @@
       </div>
     </div>
     <span class="status"><span aria-hidden="true">●</span> Connected</span>
+    <button class="logout-button" type="button" onclick={onlogout}
+      >Log out</button
+    >
   </header>
 
   <section aria-labelledby="workspace-heading">
