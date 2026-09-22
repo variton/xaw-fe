@@ -4,6 +4,13 @@
   import unitTestsReport from "../../../reports/doctest-report.html?raw";
   import coverageReport from "../../../reports/index.html?raw";
   import reportTheme from "../../css/report-theme.css?raw";
+  import { cardMetrics, coverageMetrics } from "$lib/report-summary";
+
+  const summaries = [
+    { title: "Memory leak", metrics: cardMetrics(memoryLeakReport) },
+    { title: "Unit tests", metrics: cardMetrics(unitTestsReport) },
+    { title: "Coverage tests", metrics: coverageMetrics(coverageReport) },
+  ];
 
   const reportDocuments: Record<string, { title: string; html: string }> = {
     "memory-leak": {
@@ -129,6 +136,29 @@
         </div>
       </div>
       {#if !report}
+        <div
+          class="results-summary"
+          role="region"
+          aria-label="Report results summary"
+        >
+          {#each summaries as summary}
+            <article class="result-card">
+              <h2>{summary.title}</h2>
+              {#if summary.metrics.length}
+                <dl>
+                  {#each summary.metrics as metric}
+                    <div>
+                      <dt>{metric.label}</dt>
+                      <dd>{metric.value}</dd>
+                    </div>
+                  {/each}
+                </dl>
+              {:else}
+                <p>Summary unavailable.</p>
+              {/if}
+            </article>
+          {/each}
+        </div>
         <div class="repository-actions">
           <a href={reportHref("memory-leak")}>Memory leak</a>
           <a href={reportHref("unit-tests")}>Unit tests</a>

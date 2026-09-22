@@ -111,6 +111,45 @@ h1 {
 .repository-date {
   white-space: nowrap;
 }
+.results-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: 16px;
+  padding: 24px 24px 0;
+}
+.result-card {
+  padding: 20px;
+  border: 1px solid #22763d;
+  border-radius: 4px;
+  background: linear-gradient(#082612, #030c08);
+  box-shadow: 0 0 24px #00ff410a;
+}
+.result-card h2 {
+  margin: 0 0 16px;
+  color: #65ff8d;
+  font-size: 18px;
+}
+.result-card dl {
+  margin: 0;
+}
+.result-card dl > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 10px 0;
+  border-top: 1px solid #163f24;
+}
+.result-card dt {
+  color: #8dbb98;
+  font-size: 14px;
+}
+.result-card dd {
+  margin: 0;
+  color: #39ff78;
+  font-size: 16px;
+  font-weight: 700;
+}
 .repository-actions {
   display: flex;
   flex-wrap: wrap;
