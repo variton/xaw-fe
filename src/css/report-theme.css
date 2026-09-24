@@ -1,5 +1,5 @@
 :root {
-  color-scheme: dark;
+  color-scheme: var(--theme-scheme);
   --bg: var(--theme-bg);
   --panel: var(--theme-panel);
   --panel-2: var(--theme-panel-2);
@@ -11,6 +11,7 @@
   --good: var(--theme-accent);
   --green: var(--theme-accent);
   --bad: var(--theme-bad);
+  --bad-bg: color-mix(in srgb, var(--theme-bad) 8%, transparent);
   --red: var(--theme-bad);
   scrollbar-color: var(--theme-border) var(--theme-bg);
 }
@@ -79,6 +80,8 @@ body .header {
 }
 
 body h1,
+body .header h1,
+body .title h1,
 body td.title {
   margin: 0 0 8px;
   color: var(--accent-light);
@@ -136,6 +139,7 @@ body .card-value {
 }
 
 body .failed,
+body .card-value.failed,
 body .error-kind {
   color: var(--red);
 }
@@ -222,6 +226,62 @@ body .stack-frame {
   background: var(--theme-bg);
   border: 1px solid var(--theme-border);
   border-radius: 4px;
+}
+
+/* Generated reports also contain fixed colors outside their root palette. */
+body a,
+body .headerCovTableEntryHi,
+body .coverPerHi {
+  color: var(--accent);
+}
+
+body .headerItem {
+  color: var(--muted);
+}
+
+body .ruler,
+body .coverage-bar {
+  background: var(--accent);
+}
+
+body .coverage-bar.uncovered {
+  background: var(--border);
+}
+
+body .headerCovTableHead,
+body .tableHead,
+body .row,
+body td,
+body center > table > tbody > tr > td {
+  border-color: var(--border);
+}
+
+body thead {
+  background: var(--panel-2);
+}
+
+body .passed-row {
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+
+body .failed-row,
+body details.error-item {
+  background: var(--bad-bg);
+}
+
+body .badge-failed,
+body .status-pill.fail {
+  color: var(--bad);
+  background: color-mix(in srgb, var(--bad) 12%, transparent);
+  border-color: var(--bad);
+}
+
+body details.error-item {
+  border-color: var(--bad);
+}
+
+body a:focus-visible {
+  outline-color: var(--accent);
 }
 
 @media (max-width: 600px) {

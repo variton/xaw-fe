@@ -143,6 +143,7 @@ h1 {
   line-height: 1.6;
 }
 .repository-panel {
+  color: var(--theme-text);
   border: 1px solid var(--theme-border);
   border-radius: 4px;
   background: color-mix(in srgb, var(--theme-panel) 94.9%, transparent);
