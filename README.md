@@ -8,13 +8,14 @@ The Connect button calls `POST /api/login` with a JSON body containing `username
 
 ### Mock login
 
-Use username **`demo`** and password **`matrix`**. Edit `src/lib/server/fixtures/credentials.json` to change these demo credentials:
+Use any of these demo accounts. Edit `src/lib/server/fixtures/credentials.json` to add or change credentials:
 
 ```json
-{
-  "username": "demo",
-  "password": "matrix"
-}
+[
+  { "username": "demo", "password": "matrix" },
+  { "username": "neo", "password": "white-rabbit" },
+  { "username": "trinity", "password": "follow-the-code" }
+]
 ```
 
 The fixture is imported only by server code. `mockLogin` in `src/lib/server/mock-auth.ts` performs validation; `src/routes/api/login/+server.ts` returns 200 on success, 401 for incorrect credentials, and 400 for malformed requests. This is a demo login, with no session cookie or authorization; connection state stays in memory and refreshing returns to the login view. To integrate a real backend, replace the mock route or update the endpoint in `src/lib/api/auth.ts`.
