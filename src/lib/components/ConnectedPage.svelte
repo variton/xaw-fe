@@ -1,11 +1,13 @@
 <script lang="ts">
   import { page } from "$app/state";
   import { onMount } from "svelte";
+  import SettingsPage from "./SettingsPage.svelte";
+  import { themeStyle, type Theme } from "$lib/themes";
   import ReportTrends from "./ReportTrends.svelte";
   import memoryLeakReport from "../../../reports/valgrind-report.html?raw";
   import unitTestsReport from "../../../reports/doctest-report.html?raw";
   import coverageReport from "../../../reports/index.html?raw";
-  import reportTheme from "../../css/report-theme.css?raw";
+  import reportThemeCss from "../../css/report-theme.css?raw";
   import { cardMetrics, coverageMetrics } from "$lib/report-summary";
 
   const summaries = [
@@ -34,14 +36,9 @@
     "unit-tests": { title: "Doctest unit tests report", html: unitTestsReport },
     "coverage-tests": { title: "LCOV coverage report", html: coverageReport },
   };
+  const isSettings = $derived(page.url.searchParams.get("view") === "settings");
   const reportDocument = $derived(
     reportDocuments[page.url.searchParams.get("report") ?? ""],
-  );
-  const themedReport = $derived(
-    reportDocument?.html.replace(
-      "</head>",
-      `<style>${reportTheme}</style></head>`,
-    ),
   );
 
   const reportNames: Record<string, string> = {
@@ -66,6 +63,7 @@
   );
   function reportHref(slug: string) {
     const params = new URLSearchParams(page.url.searchParams);
+    params.delete("view");
     params.set("report", slug);
     return `?${params}`;
   }
@@ -86,6 +84,10 @@
   });
 
   let {
+    interfaceTheme,
+    reportTheme,
+    saveMessage,
+    onchange,
     username = "",
     onlogout,
     repositories = [
@@ -94,10 +96,20 @@
       { id: "tcxx-23", name: "tcxx-23" },
     ],
   }: {
+    interfaceTheme: Theme;
+    reportTheme: Theme;
+    saveMessage: string;
+    onchange: (target: "interface" | "report", theme: Theme) => void;
     repositories?: Repository[];
     username?: string;
     onlogout: () => void;
   } = $props();
+  const themedReport = $derived(
+    reportDocument?.html.replace(
+      "</head>",
+      `<style>${reportThemeCss} :root { ${themeStyle(reportTheme)} }</style></head>`,
+    ),
+  );
   let selectedRepo = $state("");
   const repository = $derived(
     repositories.find((repo) => repo.id === selectedRepo),
@@ -144,116 +156,138 @@
 
   <section aria-labelledby="workspace-heading">
     <p class="eyebrow">
-      {report ? "REPOSITORY REPORT" : "CONNECTION ESTABLISHED"}
+      {isSettings
+        ? "PERSONALIZE YOUR WORKSPACE"
+        : report
+          ? "REPOSITORY REPORT"
+          : "CONNECTION ESTABLISHED"}
     </p>
-    <h1 id="workspace-heading">
-      {report ??
-        (username.trim() ? `Welcome, ${username.trim()}.` : "Welcome.")}
-    </h1>
+    <div class="welcome-heading">
+      <h1 id="workspace-heading">
+        {isSettings
+          ? "Settings"
+          : (report ??
+            (username.trim() ? `Welcome, ${username.trim()}.` : "Welcome."))}
+      </h1>
+      {#if !isSettings}
+        <a
+          class="settings-button"
+          href="?view=settings"
+          aria-label="Settings"
+          title="Settings"
+        >
+          <span aria-hidden="true">⚙</span>
+        </a>
+      {/if}
+    </div>
     <p class="intro">
-      {#if report}
+      {#if report || isSettings}
         <a class="back-link" href="?">← Back to repositories</a>
       {:else}
         Your repositories. Your artifacts. One place to watch.
       {/if}
     </p>
 
-    <div class="repository-panel" aria-live="polite">
-      <div class="panel-heading">
-        <div class="panel-title">
-          {#if repository}
-            <span class="repository-name">{repository.name}</span>
-          {/if}
-          {#if repositoryDate}
-            <time
-              class="repository-date"
-              datetime={repositoryDate}
-              title="Selected report date">[{repositoryDate}]</time
-            >
-          {/if}
-        </div>
-        <div class="panel-controls">
-          <span aria-hidden="true">[ AW ]</span>
-          {#if canShowReports}
-            <nav class="report-navigation" aria-label="Cycle reports">
-              <a
-                href={reportHref(previousReport)}
-                aria-label={`Previous report: ${reportNames[previousReport]}`}
-                title={`Previous: ${reportNames[previousReport]}`}>{"_<<"}</a
+    {#if isSettings}
+      <SettingsPage {interfaceTheme} {reportTheme} {onchange} {saveMessage} />
+    {:else}
+      <div class="repository-panel" aria-live="polite">
+        <div class="panel-heading">
+          <div class="panel-title">
+            {#if repository}
+              <span class="repository-name">{repository.name}</span>
+            {/if}
+            {#if repositoryDate}
+              <time
+                class="repository-date"
+                datetime={repositoryDate}
+                title="Selected report date">[{repositoryDate}]</time
               >
-              <a
-                href={reportHref(nextReport)}
-                aria-label={`Next report: ${reportNames[nextReport]}`}
-                title={`Next: ${reportNames[nextReport]}`}>{">>_"}</a
-              >
-            </nav>
-          {/if}
-        </div>
-      </div>
-      {#if !canShowReports}
-        <div class="panel-content">
-          <div class="terminal-mark" aria-hidden="true">&gt;_</div>
-          <h2>Select a repository and date</h2>
-          <p>
-            {repositories.length
-              ? "Choose both a repository and a date above to view report metrics, trends, and results."
-              : "No repositories are available yet. Reports will appear after a repository and date are selected."}
-          </p>
-        </div>
-      {:else}
-        {#if !report}
-          <div
-            class="results-summary"
-            role="region"
-            aria-label="Report results summary"
-          >
-            {#each summaries as summary}
-              <article class="result-card">
-                <h2>{summary.title}</h2>
-                {#if summary.metrics.length}
-                  <dl>
-                    {#each summary.metrics as metric}
-                      <div>
-                        <dt>{metric.label}</dt>
-                        <dd>{metric.value}</dd>
-                      </div>
-                    {/each}
-                  </dl>
-                {:else}
-                  <p>Summary unavailable.</p>
-                {/if}
-                <div class="repository-actions">
-                  <a href={reportHref(summary.slug)}>{summary.title}</a>
-                </div>
-              </article>
-            {/each}
+            {/if}
           </div>
-        {/if}
-        {#if reportDocument}
-          <iframe
-            class="embedded-report"
-            title={reportDocument.title}
-            srcdoc={themedReport}
-            sandbox=""
-          ></iframe>
-        {:else}
-          <ReportTrends dates={availableDates} demo />
+          <div class="panel-controls">
+            <span aria-hidden="true">[ AW ]</span>
+            {#if canShowReports}
+              <nav class="report-navigation" aria-label="Cycle reports">
+                <a
+                  href={reportHref(previousReport)}
+                  aria-label={`Previous report: ${reportNames[previousReport]}`}
+                  title={`Previous: ${reportNames[previousReport]}`}>{"_<<"}</a
+                >
+                <a
+                  href={reportHref(nextReport)}
+                  aria-label={`Next report: ${reportNames[nextReport]}`}
+                  title={`Next: ${reportNames[nextReport]}`}>{">>_"}</a
+                >
+              </nav>
+            {/if}
+          </div>
+        </div>
+        {#if !canShowReports}
           <div class="panel-content">
             <div class="terminal-mark" aria-hidden="true">&gt;_</div>
-            <h2>{repository ? repository.name : "Awaiting repository"}</h2>
+            <h2>Select a repository and date</h2>
             <p>
-              {report
-                ? `${report} results are not available yet.`
-                : repository
-                  ? "Repository selected. Artifact data is not available yet."
-                  : repositories.length
-                    ? "Choose a repository from the Repo dropdown above to get started."
-                    : "No repositories are available yet. Your connected repositories will appear in the Repo dropdown."}
+              {repositories.length
+                ? "Choose both a repository and a date above to view report metrics, trends, and results."
+                : "No repositories are available yet. Reports will appear after a repository and date are selected."}
             </p>
           </div>
+        {:else}
+          {#if !report}
+            <div
+              class="results-summary"
+              role="region"
+              aria-label="Report results summary"
+            >
+              {#each summaries as summary}
+                <article class="result-card">
+                  <h2>{summary.title}</h2>
+                  {#if summary.metrics.length}
+                    <dl>
+                      {#each summary.metrics as metric}
+                        <div>
+                          <dt>{metric.label}</dt>
+                          <dd>{metric.value}</dd>
+                        </div>
+                      {/each}
+                    </dl>
+                  {:else}
+                    <p>Summary unavailable.</p>
+                  {/if}
+                  <div class="repository-actions">
+                    <a href={reportHref(summary.slug)}>{summary.title}</a>
+                  </div>
+                </article>
+              {/each}
+            </div>
+          {/if}
+          {#if reportDocument}
+            <iframe
+              class="embedded-report"
+              title={reportDocument.title}
+              srcdoc={themedReport}
+              sandbox=""
+            ></iframe>
+          {:else}
+            <ReportTrends dates={availableDates} demo />
+            <div class="panel-content">
+              <div class="terminal-mark" aria-hidden="true">&gt;_</div>
+              <h2>{repository ? repository.name : "Awaiting repository"}</h2>
+              <p>
+                {report
+                  ? `${report} results are not available yet.`
+                  : repository
+                    ? "Repository selected. Artifact data is not available yet."
+                    : repositories.length
+                      ? "Choose a repository from the Repo dropdown above to get started."
+                      : "No repositories are available yet. Your connected repositories will appear in the Repo dropdown."}
+              </p>
+            </div>
+          {/if}
         {/if}
-      {/if}
-    </div>
+      </div>
+    {/if}
   </section>
 </div>
 

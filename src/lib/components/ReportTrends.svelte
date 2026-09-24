@@ -45,21 +45,33 @@
       title: "Memory leak",
       description: "Memory errors · lower is better",
       percent: false,
-      series: [{ key: "memoryErrors", label: "Errors", color: "#39ff78" }],
+      series: [
+        { key: "memoryErrors", label: "Errors", color: "var(--theme-accent)" },
+      ],
     },
     {
       title: "Unit tests",
       description: "Tests passed · higher is better",
       percent: true,
-      series: [{ key: "unitPassRate", label: "Pass rate", color: "#39ff78" }],
+      series: [
+        {
+          key: "unitPassRate",
+          label: "Pass rate",
+          color: "var(--theme-accent)",
+        },
+      ],
     },
     {
       title: "Coverage tests",
       description: "Code covered · higher is better",
       percent: true,
       series: [
-        { key: "lineCoverage", label: "Lines", color: "#39ff78" },
-        { key: "functionCoverage", label: "Functions", color: "#88e6ff" },
+        { key: "lineCoverage", label: "Lines", color: "var(--theme-accent)" },
+        {
+          key: "functionCoverage",
+          label: "Functions",
+          color: "var(--theme-secondary)",
+        },
       ],
     },
   ] as const;
@@ -197,12 +209,12 @@
   }
   h2 {
     margin: 0;
-    color: #65ff8d;
+    color: var(--theme-heading);
     font-size: 20px;
   }
   .trends-heading span,
   .notice {
-    color: #8dbb98;
+    color: var(--theme-muted);
     font-size: 12px;
   }
   .notice {
@@ -217,19 +229,23 @@
   article {
     min-width: 0;
     padding: 16px;
-    border: 1px solid #22763d;
+    border: 1px solid var(--theme-border);
     border-radius: 4px;
     background:
-      repeating-linear-gradient(0deg, transparent 0 3px, #39ff7804 3px 4px),
-      linear-gradient(#082612, #030c08);
+      repeating-linear-gradient(
+        0deg,
+        transparent 0 3px,
+        color-mix(in srgb, var(--theme-accent) 1.57%, transparent) 3px 4px
+      ),
+      linear-gradient(var(--theme-panel-2), var(--theme-panel));
   }
   h3 {
-    color: #39ff78;
+    color: var(--theme-accent);
     margin: 0 0 8px;
     font-size: 16px;
   }
   article p {
-    color: #8dbb98;
+    color: var(--theme-muted);
     margin: 0;
     font-size: 12px;
   }
@@ -240,13 +256,13 @@
     overflow: visible;
   }
   text {
-    fill: #8dbb98;
+    fill: var(--theme-muted);
     font:
       10px "Courier New",
       monospace;
   }
   .grid-line {
-    stroke: #22763d;
+    stroke: var(--theme-border);
     stroke-dasharray: 2 4;
   }
   .legend {
@@ -257,13 +273,13 @@
   details {
     margin-top: 16px;
     font-size: 12px;
-    color: #a4ffb8;
+    color: var(--theme-text);
   }
   summary {
     cursor: pointer;
   }
   summary:focus-visible {
-    outline: 2px solid #39ff78;
+    outline: 2px solid var(--theme-accent);
     outline-offset: 4px;
   }
   table {
@@ -275,6 +291,6 @@
   td {
     padding: 6px 3px;
     text-align: left;
-    border-bottom: 1px solid #163f24;
+    border-bottom: 1px solid var(--theme-border);
   }
 </style>
