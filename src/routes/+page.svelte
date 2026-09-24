@@ -1,8 +1,42 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  import { isTheme, themeStyle, type Theme } from "$lib/themes";
   import { replaceState } from "$app/navigation";
   import { login } from "$lib/api/auth";
   import ConnectedPage from "$lib/components/ConnectedPage.svelte";
 
+  let interfaceTheme = $state<Theme>("matrix");
+  let reportTheme = $state<Theme>("matrix");
+  let saveMessage = $state("Preferences are saved in this browser.");
+  onMount(() => {
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem("artifact-watcher-themes") ?? "null",
+      );
+      if (isTheme(saved?.interface)) interfaceTheme = saved.interface;
+      if (isTheme(saved?.report)) reportTheme = saved.report;
+    } catch {
+      saveMessage =
+        "Preferences could not be loaded. Changes will still apply for this session.";
+    }
+  });
+  function changeTheme(target: "interface" | "report", theme: Theme) {
+    if (target === "interface") interfaceTheme = theme;
+    else reportTheme = theme;
+    try {
+      localStorage.setItem(
+        "artifact-watcher-themes",
+        JSON.stringify({ interface: interfaceTheme, report: reportTheme }),
+      );
+      saveMessage = "Preferences saved in this browser.";
+    } catch {
+      saveMessage =
+        "Theme applied for this session. Browser storage is unavailable.";
+    }
+  }
+  $effect(() => {
+    document.documentElement.style.cssText = themeStyle(interfaceTheme);
+  });
   let username = $state("");
   let password = $state("");
   let isConnecting = $state(false);
@@ -50,7 +84,7 @@
   />
 </svelte:head>
 
-<main>
+<main style={themeStyle(interfaceTheme)}>
   <div class="digital-rain" aria-hidden="true">
     {#each Array.from({ length: 28 }, (_, i) => i) as column}
       <span
@@ -63,7 +97,14 @@
     {/each}
   </div>
   {#if isConnected}
-    <ConnectedPage {username} onlogout={logout} />
+    <ConnectedPage
+      {username}
+      onlogout={logout}
+      {interfaceTheme}
+      {reportTheme}
+      {saveMessage}
+      onchange={changeTheme}
+    />
   {:else}
     <a class="brand" href="/" aria-label="Artifact watcher home"
       >Artifact watcher<span>.</span></a
