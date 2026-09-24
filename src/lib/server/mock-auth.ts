@@ -10,7 +10,8 @@ export async function mockLogin(
   return (
     typeof username === "string" &&
     typeof password === "string" &&
-    username === credentials.username &&
-    password === credentials.password
+    credentials.some(
+      (user) => username === user.username && password === user.password,
+    )
   );
 }
