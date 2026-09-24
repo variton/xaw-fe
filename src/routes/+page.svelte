@@ -58,7 +58,7 @@
     isConnecting = true;
     connectionMessage = "";
     try {
-      //await login(username, password);
+      await login(username, password);
       password = "";
       isConnected = true;
     } catch (error) {
