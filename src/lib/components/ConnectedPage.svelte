@@ -191,7 +191,11 @@
     {#if isSettings}
       <SettingsPage {interfaceTheme} {reportTheme} {onchange} {saveMessage} />
     {:else}
-      <div class="repository-panel" aria-live="polite">
+      <div
+        class="repository-panel"
+        style={themeStyle(reportTheme)}
+        aria-live="polite"
+      >
         <div class="panel-heading">
           <div class="panel-title">
             {#if repository}
