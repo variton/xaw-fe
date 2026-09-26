@@ -37,6 +37,9 @@
     "coverage-tests": { title: "LCOV coverage report", html: coverageReport },
   };
   const isSettings = $derived(page.url.searchParams.get("view") === "settings");
+  const isQualityReports = $derived(
+    page.url.searchParams.get("view") === "quality-reports",
+  );
   const reportDocument = $derived(
     reportDocuments[page.url.searchParams.get("report") ?? ""],
   );
@@ -63,7 +66,7 @@
   );
   function reportHref(slug: string) {
     const params = new URLSearchParams(page.url.searchParams);
-    params.delete("view");
+    if (!isQualityReports) params.delete("view");
     params.set("report", slug);
     return `?${params}`;
   }
@@ -158,35 +161,55 @@
     <p class="eyebrow">
       {isSettings
         ? "PERSONALIZE YOUR WORKSPACE"
-        : report
-          ? "REPOSITORY REPORT"
-          : "CONNECTION ESTABLISHED"}
+        : isQualityReports
+          ? "REPOSITORY QUALITY"
+          : report
+            ? "REPOSITORY REPORT"
+            : "CONNECTION ESTABLISHED"}
     </p>
     <div class="welcome-heading">
       <h1 id="workspace-heading">
         {isSettings
           ? "Settings"
-          : (report ??
-            (username.trim() ? `Welcome, ${username.trim()}.` : "Welcome."))}
+          : isQualityReports
+            ? "Quality reports"
+            : (report ??
+              (username.trim() ? `Welcome, ${username.trim()}.` : "Welcome."))}
       </h1>
       {#if !isSettings}
-        <a
-          class="settings-button"
-          href="?view=settings"
-          aria-label="Settings"
-          title="Settings"
-        >
-          <span aria-hidden="true">⚙</span>
-        </a>
+        <div class="workspace-actions">
+          <a
+            class="settings-button"
+            href="?view=settings"
+            aria-label="Settings"
+            title="Settings"
+          >
+            <span aria-hidden="true">⚙</span>
+          </a>
+          <a
+            class="next-button"
+            href={isQualityReports ? "?" : "?view=quality-reports"}
+            aria-label={isQualityReports
+              ? "Back to repositories"
+              : "Quality reports"}
+            title={isQualityReports
+              ? "Back to repositories"
+              : "Quality reports"}
+          >
+            <span aria-hidden="true">»</span>
+          </a>
+        </div>
       {/if}
     </div>
-    <p class="intro">
-      {#if report || isSettings}
-        <a class="back-link" href="?">← Back to repositories</a>
-      {:else}
-        Your repositories. Your artifacts. One place to watch.
-      {/if}
-    </p>
+    {#if !isQualityReports}
+      <p class="intro">
+        {#if report || isSettings}
+          <a class="back-link" href="?">← Back to repositories</a>
+        {:else}
+          Your repositories. Your artifacts. One place to watch.
+        {/if}
+      </p>
+    {/if}
 
     {#if isSettings}
       <SettingsPage {interfaceTheme} {reportTheme} {onchange} {saveMessage} />
@@ -194,6 +217,7 @@
       <div
         class="repository-panel"
         style={themeStyle(reportTheme)}
+        style:margin-top={isQualityReports ? "40px" : undefined}
         aria-live="polite"
       >
         <div class="panel-heading">
@@ -211,7 +235,7 @@
           </div>
           <div class="panel-controls">
             <span aria-hidden="true">[ AW ]</span>
-            {#if canShowReports}
+            {#if canShowReports && !isQualityReports}
               <nav class="report-navigation" aria-label="Cycle reports">
                 <a
                   href={reportHref(previousReport)}
@@ -235,6 +259,14 @@
               {repositories.length
                 ? "Choose both a repository and a date above to view report metrics, trends, and results."
                 : "No repositories are available yet. Reports will appear after a repository and date are selected."}
+            </p>
+          </div>
+        {:else if isQualityReports}
+          <div class="panel-content">
+            <h2>No quality reports yet</h2>
+            <p>
+              Quality reports for this repository and date will appear here when
+              available.
             </p>
           </div>
         {:else}
