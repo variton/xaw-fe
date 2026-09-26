@@ -104,7 +104,7 @@ h1 {
 }
 .welcome-heading {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
 }
@@ -112,7 +112,14 @@ h1 {
   min-width: 0;
   overflow-wrap: anywhere;
 }
-.settings-button {
+.workspace-actions {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 12px;
+}
+.settings-button,
+.next-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -124,16 +131,23 @@ h1 {
   background: linear-gradient(var(--theme-panel-2), var(--theme-bg));
   color: var(--theme-accent);
   font-size: 30px;
+  font-family: inherit;
+  padding: 0;
+  box-sizing: border-box;
+  text-decoration: none;
   cursor: pointer;
 }
-.settings-button:hover {
+.settings-button:hover,
+.next-button:hover {
   border-color: var(--theme-accent);
   background: var(--theme-hover);
 }
-.settings-button:active {
+.settings-button:active,
+.next-button:active {
   transform: translateY(2px);
 }
-.settings-button:focus-visible {
+.settings-button:focus-visible,
+.next-button:focus-visible {
   outline: 3px solid var(--theme-accent);
   outline-offset: 4px;
 }
