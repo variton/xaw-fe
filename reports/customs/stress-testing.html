@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stress testing — demo report</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 32px;
+        background: #08180f;
+        color: #e5f9eb;
+        font: 15px/1.6 monospace;
+      }
+      main {
+        max-width: 1000px;
+        margin: auto;
+      }
+      h1,
+      h2 {
+        color: #68ff9b;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+      }
+      .card {
+        padding: 20px;
+        border: 1px solid #224a32;
+        border-radius: 4px;
+      }
+      .card-title {
+        font-size: 13px;
+      }
+      .card-value {
+        font-size: 24px;
+        color: #68ff9b;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #224a32;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p>DEMO · SYNTHETIC DATA</p>
+      <h1>Stress testing</h1>
+      <p>
+        Illustrative results only. No stress test was run against the selected
+        repository.
+      </p>
+      <div class="cards">
+        <article class="card">
+          <div class="card-title">Peak concurrent users</div>
+          <div class="card-value">1,000</div>
+        </article>
+        <article class="card">
+          <div class="card-title">Peak throughput</div>
+          <div class="card-value">2,450 requests/s</div>
+        </article>
+        <article class="card">
+          <div class="card-title">P95 latency at peak load</div>
+          <div class="card-value">420 ms</div>
+        </article>
+        <article class="card">
+          <div class="card-title">Error rate at peak load</div>
+          <div class="card-value">0.80%</div>
+        </article>
+      </div>
+      <h2>Load stages</h2>
+      <p>
+        Simulated ramp from 100 to 1,000 concurrent users, followed by recovery.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Stage</th>
+            <th scope="col">Users</th>
+            <th scope="col">Requests/s</th>
+            <th scope="col">P95 (ms)</th>
+            <th scope="col">Errors</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Baseline</td>
+            <td>100</td>
+            <td>320</td>
+            <td>85</td>
+            <td>0.00%</td>
+          </tr>
+          <tr>
+            <td>Ramp-up</td>
+            <td>250</td>
+            <td>780</td>
+            <td>120</td>
+            <td>0.01%</td>
+          </tr>
+          <tr>
+            <td>Sustained load</td>
+            <td>500</td>
+            <td>1,510</td>
+            <td>185</td>
+            <td>0.05%</td>
+          </tr>
+          <tr>
+            <td>High load</td>
+            <td>750</td>
+            <td>2,120</td>
+            <td>290</td>
+            <td>0.20%</td>
+          </tr>
+          <tr>
+            <td>Peak load</td>
+            <td>1,000</td>
+            <td>2,450</td>
+            <td>420</td>
+            <td>0.80%</td>
+          </tr>
+          <tr>
+            <td>Recovery</td>
+            <td>100</td>
+            <td>318</td>
+            <td>90</td>
+            <td>0.00%</td>
+          </tr>
+        </tbody>
+      </table>
+      <h2>Demo findings</h2>
+      <p>
+        Latency and errors rise at peak load and return near baseline during
+        recovery. These fictional values do not establish production capacity.
+      </p>
+    </main>
+  </body>
+</html>

@@ -4,11 +4,36 @@
   import SettingsPage from "./SettingsPage.svelte";
   import { themeStyle, type Theme } from "$lib/themes";
   import ReportTrends from "./ReportTrends.svelte";
+  import BenchmarkChart from "./BenchmarkChart.svelte";
   import memoryLeakReport from "../../../reports/valgrind-report.html?raw";
   import unitTestsReport from "../../../reports/doctest-report.html?raw";
   import coverageReport from "../../../reports/index.html?raw";
+  import benchmarkingReport from "../../../reports/customs/benchmarking.html?raw";
+  import stressTestingReport from "../../../reports/customs/stress-testing.html?raw";
   import reportThemeCss from "../../css/report-theme.css?raw";
-  import { cardMetrics, coverageMetrics } from "$lib/report-summary";
+  import {
+    cardMetrics,
+    coverageMetrics,
+    benchmarkingMetrics,
+    benchmarkingSamples,
+  } from "$lib/report-summary";
+
+  const benchmarkMetrics = benchmarkingMetrics(benchmarkingReport);
+  const benchmarkSamples = benchmarkingSamples(benchmarkingReport);
+  const qualitySummaries = [
+    {
+      title: "Benchmarking",
+      slug: "benchmarking",
+      metrics: benchmarkMetrics,
+      demo: false,
+    },
+    {
+      title: "Stress testing",
+      slug: "stress-testing",
+      metrics: cardMetrics(stressTestingReport),
+      demo: true,
+    },
+  ];
 
   const summaries = [
     {
@@ -44,12 +69,19 @@
     reportDocuments[page.url.searchParams.get("report") ?? ""],
   );
 
-  const reportNames: Record<string, string> = {
+  const mainReportNames: Record<string, string> = {
     "memory-leak": "Memory leak",
     "unit-tests": "Unit tests",
     "coverage-tests": "Coverage tests",
   };
-  const reportOrder = Object.keys(reportNames);
+  const qualityReportNames: Record<string, string> = {
+    benchmarking: "Benchmarking",
+    "stress-testing": "Stress testing",
+  };
+  const reportNames = $derived(
+    isQualityReports ? qualityReportNames : mainReportNames,
+  );
+  const reportOrder = $derived(Object.keys(reportNames));
   const reportIndex = $derived(
     reportOrder.indexOf(page.url.searchParams.get("report") ?? ""),
   );
@@ -107,6 +139,18 @@
     username?: string;
     onlogout: () => void;
   } = $props();
+  const themedStressTest = $derived(
+    stressTestingReport.replace(
+      "</head>",
+      `<style>${reportThemeCss} :root { ${themeStyle(reportTheme)} }</style></head>`,
+    ),
+  );
+  const themedBenchmark = $derived(
+    benchmarkingReport.replace(
+      "</head>",
+      `<style>${reportThemeCss} :root { ${themeStyle(reportTheme)} }</style></head>`,
+    ),
+  );
   const themedReport = $derived(
     reportDocument?.html.replace(
       "</head>",
@@ -201,7 +245,13 @@
         </div>
       {/if}
     </div>
-    {#if !isQualityReports}
+    {#if isQualityReports && report}
+      <p class="intro">
+        <a class="back-link" href="?view=quality-reports"
+          >← Back to quality reports</a
+        >
+      </p>
+    {:else if !isQualityReports}
       <p class="intro">
         {#if report || isSettings}
           <a class="back-link" href="?">← Back to repositories</a>
@@ -217,7 +267,7 @@
       <div
         class="repository-panel"
         style={themeStyle(reportTheme)}
-        style:margin-top={isQualityReports ? "40px" : undefined}
+        style:margin-top={isQualityReports && !report ? "40px" : undefined}
         aria-live="polite"
       >
         <div class="panel-heading">
@@ -235,8 +285,13 @@
           </div>
           <div class="panel-controls">
             <span aria-hidden="true">[ AW ]</span>
-            {#if canShowReports && !isQualityReports}
-              <nav class="report-navigation" aria-label="Cycle reports">
+            {#if isQualityReports || canShowReports}
+              <nav
+                class="report-navigation"
+                aria-label={isQualityReports
+                  ? "Cycle quality reports"
+                  : "Cycle reports"}
+              >
                 <a
                   href={reportHref(previousReport)}
                   aria-label={`Previous report: ${reportNames[previousReport]}`}
@@ -262,13 +317,53 @@
             </p>
           </div>
         {:else if isQualityReports}
-          <div class="panel-content">
-            <h2>No quality reports yet</h2>
-            <p>
-              Quality reports for this repository and date will appear here when
-              available.
-            </p>
-          </div>
+          {#if !report}
+            <div
+              class="results-summary"
+              role="region"
+              aria-label="Quality report results summary"
+            >
+              {#each qualitySummaries as summary}
+                <article class="result-card">
+                  <h2>{summary.title}</h2>
+                  {#if summary.demo}<p>
+                      DEMO · Synthetic data, not repository results.
+                    </p>{/if}
+                  {#if summary.metrics.length}
+                    <dl>
+                      {#each summary.metrics as metric}
+                        <div>
+                          <dt>{metric.label}</dt>
+                          <dd>{metric.value}</dd>
+                        </div>
+                      {/each}
+                    </dl>
+                  {:else}
+                    <p>Summary unavailable.</p>
+                  {/if}
+                  <div class="repository-actions">
+                    <a href={reportHref(summary.slug)}>{summary.title}</a>
+                  </div>
+                </article>
+              {/each}
+            </div>
+            <BenchmarkChart samples={benchmarkSamples} />
+          {/if}
+          {#if page.url.searchParams.get("report") === "benchmarking"}
+            <iframe
+              class="embedded-report"
+              title="SSIM benchmarking report"
+              srcdoc={themedBenchmark}
+              sandbox=""
+            ></iframe>
+          {:else if page.url.searchParams.get("report") === "stress-testing"}
+            <iframe
+              class="embedded-report"
+              title="Stress testing demo report"
+              srcdoc={themedStressTest}
+              sandbox=""
+            ></iframe>
+          {/if}
         {:else}
           {#if !report}
             <div
